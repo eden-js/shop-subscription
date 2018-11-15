@@ -1,7 +1,7 @@
 <product-subscription-card>
 
   <figure class="card card-product">
-    <a href="/product/{ opts.product.slug }">
+    <a href="/product/{ opts.product.slug }" if={ (opts.product.images || []).length }>
       <img class="card-img-top img-fluid" itemprop="image" src={ this.media.url(opts.product.images[0], '3x-sq') } alt={ opts.product.title[this.language] }>
     </a>
 		<figcaption class="card-body product-info">

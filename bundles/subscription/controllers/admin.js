@@ -35,7 +35,7 @@ class AdminSubscriptionController extends Controller {
 
     // Bind build methods
     this.build = this.build.bind(this);
-    
+
 
     // Build
     this.build();
@@ -45,43 +45,7 @@ class AdminSubscriptionController extends Controller {
    * Builds admin category
    */
   build () {
-    // On simple product sanitise
-    this.eden.pre('product.sanitise', (data) => {
-      // Check product type
-      if (data.product.get('type') !== 'subscription') return;
-
-      // Set price
-      data.sanitised.price     = parseFloat(data.product.get('pricing.price')) || 0.00;
-      data.sanitised.available = (parseInt(data.product.get('availability.quantity')) || 0) > 0;
-    });
-
-    // Pre pricing submit
-    this.eden.pre('product.pricing', (data) => {
-      // Check type
-      if (data.type !== 'subscription') return;
-
-      // Set pricing
-      data.pricing.price = parseFloat(data.pricing.price);
-    });
-
-    // Pre pricing submit
-    this.eden.pre('product.submit', (req, product) => {
-      // Check type
-      if (product.get('type') !== 'subscription') return;
-
-    });
-
-    // Pre pricing submit
-    this.eden.pre('product.availability', (data) => {
-      // Check type
-      if (data.type !== 'subscription') return;
-
-      // Set pricing
-      data.availability.quantity = parseInt(data.availability.quantity);
-    });
-
-    // Register product types
-    ProductHelper.register('subscription');
+    
   }
 }
 

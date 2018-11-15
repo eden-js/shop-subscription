@@ -53,7 +53,7 @@
 
   <script>
     // set values
-    this.options = opts.product.pricing || [];
+    this.options = Object.values(opts.product.pricing || []);
 
     /**
      * on option
@@ -67,6 +67,9 @@
 
       // push options
       this.options.push({});
+
+      // update view
+      this.update();
     }
 
     /**
@@ -81,6 +84,9 @@
 
       // push options
       this.options.splice(e.item.i, 1);
+
+      // update view
+      this.update();
     }
 
   </script>
