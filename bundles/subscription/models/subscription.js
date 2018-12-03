@@ -77,17 +77,16 @@ class Subscription extends Model {
     // sanitise
     let sanitised = {
       'id'      : this.get('_id') ? this.get('_id').toString() : null,
-      'is'      : 'Subscription:subscription',
+      'is'      : 'subscription',
       'due'     : this.get('due'),
       'order'   : await this.get('order') ? await (await this.get('order')).sanitise() : null,
-      'Subscription' : await this.get('Subscription') ? await (await this.get('Subscription')).sanitise() : null,
-      'started' : this.get('started'),
+      'started' : this.get('started')
     };
 
     // return sanitised bot
     await eden.hook('subscription.sanitise', {
-      'Subscription'   : this,
-      'sanitised' : sanitised
+      'sanitised'    : sanitised,
+      'Subscription' : this
     });
 
     // return sanitised

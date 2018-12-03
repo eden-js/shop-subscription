@@ -23,10 +23,6 @@ class SubscriptionController extends Controller {
     // bind build methods
     this.build = this.build.bind(this);
 
-    // bind private methods
-    this._pricing      = this._pricing.bind(this);
-    this._availability = this._availability.bind(this);
-
     // build product helper
     this.build();
   }
@@ -36,11 +32,7 @@ class SubscriptionController extends Controller {
    */
   async build () {
     // price hooks
-    this.eden.pre('line.price', this._subscriptionPrice);
-
-    // await variable pricing
-    this.eden.pre('product.subscription.pricing',      this._pricing);
-    this.eden.pre('product.subscription.availability', this._availability);
+    this.eden.pre('payment.pay', this._pay);
 
     // pre pricing submit
     this.eden.pre('product.submit', (req, product) => {
@@ -51,72 +43,130 @@ class SubscriptionController extends Controller {
       product.set('subscription', req.body.subscription || {});
     });
 
-    // on simple product sanitise
-    this.eden.pre('product.sanitise', (data) => {
-      // check product type
-      if (data.product.get('type') !== 'subscription') return;
+    // register product types
+    productHelper.product('subscription', {
 
-      // set price
-      data.sanitised.price        = parseFloat(data.product.get('pricing.price')) || 0.00;
-      data.sanitised.available    = (parseInt(data.product.get('availability.quantity')) || 0) > 0;
-      data.sanitised.subscription = data.product.get('subscription') || {};
+    }, async (product, opts) => {
+      // get prices
+      let prices = Array.from(product.get('pricing'));
+
+      // loop prices
+      let price = prices.reduce((smallest, price) => {
+        // return if price smaller
+        if (price.price < smallest.price) return price;
+
+        // return smallest
+        return smallest;
+      }, {
+        'price' : Infinity
+      });
+
+      // check period in opts
+      if (opts && opts.period) {
+        // set price
+        price = prices.find((p) => p.period === opts.period);
+      }
+
+      // return price
+      return {
+        'amount'    : parseFloat(price.price),
+        'period'    : price.period,
+        'currency'  : 'USD',
+        'available' : true
+      };
+    }, async (product, opts) => {
+
+    });
+  }
+
+  /**
+   * pay invoice
+   *
+   * @param  {product} Payment
+   *
+   * @return {Promise}
+   */
+  async _pay (payment) {
+    // check method
+    if (payment.get('error')) return;
+
+    // load user
+    let invoice = await payment.get('invoice');
+    let order   = await invoice.get('order');
+
+    // get lines
+    let lines    = order.get('lines');
+    let products = await order.get('products');
+
+    // check lines
+    let subscriptionLines = lines.filter((line) => {
+      // get product
+      let product = products.find((p) => p.get('_id').toString() === line.product);
+
+      // check product
+      return product.get('type') === 'subscription';
     });
 
-    // register product types
-    productHelper.register('subscription');
+    // check line
+    if (!subscriptionLines || !subscriptionLines.length) return;
 
-  }
+    // setup logic
+    await Promise.all(subscriptionLines.map(async (line) => {
+      // get product
+      let product = products.find((p) => p.get('_id').toString() === line.product);
+      let prices  = Array.from(product.get('pricing'));
 
-  /**
-   * hook product information
-   *
-   * @param  {Object}  data
-   *
-   * @return {Promise}
-   */
-  async _pricing (data) {
-    // return on error
-    if (data.error) return;
+      // loop prices
+      let price = prices.reduce((smallest, price) => {
+        // return if price smaller
+        if (price.price < smallest.price) return price;
 
-    // set price
-    data.price = parseFloat(data.product.get('pricing.price'));
-  }
+        // return smallest
+        return smallest;
+      }, {
+        'price' : Infinity
+      });
 
-  /**
-   * hook product information
-   *
-   * @param  {Object}  data
-   *
-   * @return {Promise}
-   */
-  async _availability (data) {
-    // return on error
-    if (data.error) return;
+      // check period in opts
+      if (line.opts && line.opts.period) {
+        // set price
+        price = prices.find((p) => p.period === line.opts.period);
+      }
 
-    // check available
-    if (data.qty > data.product.get('availability.quantity')) data.error = {
-      'id'   : 'availability.notavailable',
-      'text' : 'Not enough quantity available'
-    };
-  }
+      // loop quantity
+      for (let i = 0; i < parseInt(line.qty); i++) {
+        // create new subscription
+        let subscription = await Subscription.findOne({
+          'lid'        : i,
+          'period'     : line.opts.period || price.period,
+          'user.id'    : (await order.get('user')).get('_id').toString(),
+          'order.id'   : order,
+          'product.id' : product
+        }) || new Subscription({
+          'lid'     : i,
+          'line'    : line,
+          'user'    : await order.get('user'),
+          'price'   : price.amount,
+          'order'   : order,
+          'period'  : line.opts.period || price.period,
+          'product' : product,
+          'payment' : payment,
+          'invoice' : invoice
+        });
 
-  /**
-   * alter variation price
-   *
-   * @param  {Object} opts
-   *
-   * @return {*}
-   */
-  async _subscriptionPrice (opts) {
-    // check product type
-    if (opts.item.product.get('type') !== 'subscription') return;
+        // save subscription
+        await subscription.save();
 
-    // set price
-    let price = parseFloat(opts.item.product.get('pricing.price'));
+        // add to subscriptions
+        subscriptions.push(subscription);
+      }
+    }));
 
-    // set price
-    opts.base  = price;
-    opts.price = price * opts.item.qty;
+    // save subscriptions to order
+    order.set('subscriptions', subscriptions);
+
+    // save order
+    await order.save();
   }
 }
 
