@@ -4,10 +4,11 @@ const config     = require('config');
 const Controller = require('controller');
 
 // require models
-const Product = model('product');
+const Product      = model('product');
+const Subscription = model('subscription');
 
 // get helpers
-const productHelper = helper('product');
+const ProductHelper = helper('product');
 
 /**
  * build product controller
@@ -44,7 +45,7 @@ class SubscriptionController extends Controller {
     });
 
     // register product types
-    productHelper.product('subscription', {
+    ProductHelper.product('subscription', {
 
     }, async (product, opts) => {
       // get prices
@@ -110,6 +111,9 @@ class SubscriptionController extends Controller {
     // check line
     if (!subscriptionLines || !subscriptionLines.length) return;
 
+    // create subscriptions array
+    let subscriptions = [];
+
     // setup logic
     await Promise.all(subscriptionLines.map(async (line) => {
       // get product
@@ -131,6 +135,11 @@ class SubscriptionController extends Controller {
       if (line.opts && line.opts.period) {
         // set price
         price = prices.find((p) => p.period === line.opts.period);
+      } else {
+        // set period price
+        line.opts = {
+          'period' : price.period
+        };
       }
 
       // loop quantity
@@ -139,9 +148,9 @@ class SubscriptionController extends Controller {
         let subscription = await Subscription.findOne({
           'lid'        : i,
           'period'     : line.opts.period || price.period,
-          'user.id'    : (await order.get('user')).get('_id').toString(),
-          'order.id'   : order,
-          'product.id' : product
+          'user.id'    : order.get('user.id'),
+          'order.id'   : order.get('_id').toString(),
+          'product.id' : product.get('_id').toString()
         }) || new Subscription({
           'lid'     : i,
           'line'    : line,
