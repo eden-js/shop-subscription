@@ -18,16 +18,23 @@
         </div>
       </div>
       <div class="card-footer">
+      
+        <a href="/checkout" class="btn btn-primary float-right ml-2" if={ this.cart.has(opts.product, { 'period' : this.period }) }>
+          { this.t('checkout.proceed') }
+        </a>
+      
         <span class="btn-group float-right">
           <a href="#!" if={ this.cart.line(opts.product, { 'period' : this.period }) } onclick={ onRemove } class="btn btn-danger">
             <i class="fa fa-times" />
           </a>
           <a href="#!" onclick={ onAdd } class={ 'btn btn-success' : true, 'disabled' : !opts.product.price.available }>
-            <money amount={ price() } /> { this.t('cart.add') }
+            <span if={ this.cart.has(opts.product, { 'period' : this.period }) }>
+              { this.cart.line(opts.product, { 'period' : this.period }).qty }
+            </span>
+            { this.t(this.cart.has(opts.product, { 'period' : this.period }) ? 'cart.added' : 'cart.add') }
+            -
+            <money amount={ price() * (this.cart.line(opts.product, { 'period' : this.period }) ? this.cart.line(opts.product, { 'period' : this.period }).qty : 1) } />
           </a>
-        </span>
-        <span class="float-right btn btn-link" if={ this.cart.line(opts.product, { 'period' : this.period }) }>
-          <span>{ this.cart.line(opts.product, { 'period' : this.period }).qty }</span>
         </span>
       </div>
     </div>

@@ -1,5 +1,6 @@
 
 // bind dependencies
+const uuid       = require('uuid');
 const config     = require('config');
 const Controller = require('controller');
 
@@ -86,6 +87,56 @@ class SubscriptionController extends Controller {
           return false;
         }
       }
+    }, async (product, line, order) => {
+      console.log(product, line, order);
+      // get user
+      let user = await order.get('user');
+
+      // get price
+      let price = this._price(product, line.opts);
+
+      // get opts
+      let subscription = await Subscription.findOne({
+        'uuid' : line.opts.uuid
+      }) || new Subscription({
+        'line'    : line,
+        'user'    : user,
+        'price'   : price.price,
+        'order'   : order,
+        'period'  : line.opts.period || price.period,
+        'product' : product
+      });
+
+      // set paypal
+      subscription.set('state',   'active');
+      subscription.set('started', new Date());
+
+      // set now
+      let due = new Date();
+
+      // check interval
+      if (subscription.get('period') === 'weekly') {
+        // set now
+        due.setTime((new Date()).getTime() + (7 * 24 * 60 * 60 * 1000));
+      } else if (subscription.get('period') === 'monthly') {
+        // set due to one week ahead
+        due.setMonth(due.getMonth() + 1);
+      } else if (subscription.get('period') === 'quarterly') {
+        // set due to one week ahead
+        due.setMonth(due.getMonth() + 3);
+      } else if (subscription.get('period') === 'biannually') {
+        // set due to one week ahead
+        due.setMonth(due.getMonth() + 6);
+      } else if (subscription.get('period') === 'annually') {
+        // set due to one week ahead
+        due.setMonth(due.getMonth() + 12);
+      }
+
+      // set due
+      subscription.set('due', due);
+
+      // save subscription
+      await subscription.save();
     });
   }
 
@@ -184,6 +235,9 @@ class SubscriptionController extends Controller {
         };
       }
 
+      // set opts
+      line.opts.uuid = uuid();
+
       // loop quantity
       for (let i = 0; i < parseInt(line.qty); i++) {
         // create new subscription
@@ -206,6 +260,7 @@ class SubscriptionController extends Controller {
         });
 
         // set details
+        subscription.set('uuid',    line.opts.uuid);
         subscription.set('payment', payment);
         subscription.set('invoice', invoice);
 
