@@ -79,6 +79,7 @@ class Subscription extends Model {
       'id'      : this.get('_id') ? this.get('_id').toString() : null,
       'is'      : 'subscription',
       'due'     : this.get('due'),
+      'state'   : this.get('state'),
       'order'   : await this.get('order') ? await (await this.get('order')).sanitise() : null,
       'started' : this.get('started')
     };

@@ -155,7 +155,7 @@ class SubscriptionController extends Controller {
           'lid'     : i,
           'line'    : line,
           'user'    : await order.get('user'),
-          'price'   : price.amount,
+          'price'   : price.price,
           'order'   : order,
           'period'  : line.opts.period || price.period,
           'product' : product,
