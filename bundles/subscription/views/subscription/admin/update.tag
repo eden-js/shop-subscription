@@ -31,14 +31,11 @@
                     <b>{ this.t('subscription.status') }</b>
                   </div>
                   <div class="col-9">
-                    { opts.subscription.status || 'Pending' }
+                    { opts.subscription.state || 'Pending' }
                   </div>
                 </div>
               </div>
             </div>
-            <virtual each={ action, i in this.subscription.actions }>
-              <div data-is="{ action.type }-subscription" subscription={ this.subscription } action={ action } />
-            </virtual>
             <button type="submit" class="btn btn-lg btn-success mt-3">
               { opts.subscription.id ? 'Update' : 'Create' } subscription
             </button>
@@ -49,7 +46,7 @@
                 { this.t('checkout.summary') }
               </div>
               <div class="card-body">
-                <product-summary type="subscription" lines={ this.subscription.lines } actions={ this.subscription.actions } products={ this.subscription.products } />
+                
               </div>
             </div>
           </div>

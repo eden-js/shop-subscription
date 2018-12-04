@@ -355,7 +355,7 @@ class AdminSubscriptionController extends Controller {
         let user = await row.get('user');
 
         // return user name
-        return user ? (user.name() || user.get('email')) : 'Anonymous';
+        return user ? '<a href="/admin/user/' + user.get('_id').toString() + '">' + (user.name() || user.get('email')) + '</a>' : 'Anonymous';
       }
     }).column('started', {
       'sort'   : true,
@@ -383,6 +383,9 @@ class AdminSubscriptionController extends Controller {
       'sort'   : true,
       'title'  : 'Price',
       'format' : async (col, row) => {
+        // get currency
+        const invoice = await row.get('invoice');
+
         // return invoice total
         return col ? formatter.format(col, {
           'code' : invoice.get('currency') || 'USD'
@@ -399,10 +402,9 @@ class AdminSubscriptionController extends Controller {
       'title'  : 'Paid',
       'format' : async (col, row) => {
         // get invoice
-        let invoice = await row.get('invoice');
-        let payment = await Payment.findOne({
-          'invoice.id' : invoice ? invoice.get('_id').toString() : null
-        });
+        let payment = await row.get('payment');
+
+        console.log(payment);
 
         // get paid
         return payment && payment.get('complete') ? '<span class="btn btn-sm btn-success">Paid</span>' : '<span class="btn btn-sm btn-danger">Unpaid</span>';

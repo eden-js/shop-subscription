@@ -76,7 +76,11 @@ class SubscriptionController extends Controller {
         'available' : true
       };
     }, async (product, opts) => {
+      // check if only single
+      if (product.get('subscription.isSingle')) {
+        // check if user has subscription
 
+      }
     });
   }
 
@@ -162,6 +166,10 @@ class SubscriptionController extends Controller {
           'payment' : payment,
           'invoice' : invoice
         });
+
+        // set details
+        subscription.set('payment', payment);
+        subscription.set('invoice', invoice);
 
         // save subscription
         await subscription.save();
