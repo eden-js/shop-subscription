@@ -48,25 +48,8 @@ class SubscriptionController extends Controller {
     ProductHelper.product('subscription', {
 
     }, async (product, opts) => {
-      // get prices
-      let prices = Array.from(product.get('pricing'));
-
-      // loop prices
-      let price = prices.reduce((smallest, price) => {
-        // return if price smaller
-        if (price.price < smallest.price) return price;
-
-        // return smallest
-        return smallest;
-      }, {
-        'price' : Infinity
-      });
-
-      // check period in opts
-      if (opts && opts.period) {
-        // set price
-        price = prices.find((p) => p.period === opts.period);
-      }
+      // get price
+      let price = this._price(product, opts);
 
       // return price
       return {
@@ -75,13 +58,68 @@ class SubscriptionController extends Controller {
         'currency'  : 'USD',
         'available' : true
       };
-    }, async (product, opts) => {
+    }, async (product, line, req) => {
+      // get price
+      let price = this._price(product, line.opts);
+
       // check if only single
       if (product.get('subscription.isSingle')) {
         // check if user has subscription
+        if (req.lines.find((l) => {
+          // return if found
+          return l.product === product.get('_id').toString();
+        })) {
+          // do alert
+          req.alert('error', 'You can only have one ' + product.get('title.' + req.language) + ' at once!');
 
+          // return false
+          return false;
+        } else if (await Subscription.findOne({
+          'state'      : 'active',
+          'user.id'    : req.user.get('_id').toString(),
+          'product.id' : product.get('_id').toString()
+        })) {
+          // do alert
+          req.alert('error', 'You already have this subscription!');
+
+          // return false
+          return false;
+        }
       }
     });
+  }
+
+  /**
+   * gets product price
+   *
+   * @param  {Product} product
+   * @param  {Object}  opts
+   *
+   * @return {*}
+   */
+  _price (product, opts) {
+    // get prices
+    let prices = Array.from(product.get('pricing'));
+
+    // loop prices
+    let price = prices.reduce((smallest, price) => {
+      // return if price smaller
+      if (price.price < smallest.price) return price;
+
+      // return smallest
+      return smallest;
+    }, {
+      'price' : Infinity
+    });
+
+    // check period in opts
+    if (opts && opts.period) {
+      // set price
+      price = prices.find((p) => p.period === opts.period);
+    }
+
+    // return price
+    return price;
   }
 
   /**
