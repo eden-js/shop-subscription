@@ -1,5 +1,5 @@
 <product-subscription-price>
-  { this.t('from') } <span itemprop="price" content={ this.price.amount.toFixed(2) }><money amount={ this.price.amount } /></span><span itemprop="priceCurrency" content="USD" />
+  { this.t('from') } <span itemprop="price" content={ (this.price.amount || 0).toFixed(2) }><money amount={ this.price.amount } /></span><span itemprop="priceCurrency" content="USD" />
   <link itemprop="availability" href="http://schema.org/InStock" if={ this.price.available } />
 
   <script>

@@ -40,12 +40,12 @@
 
   <script>
     // load mixins
-    this.mixin ('cart');
-    this.mixin ('i18n');
-    this.mixin ('media');
+    this.mixin('cart');
+    this.mixin('i18n');
+    this.mixin('media');
 
     // set variables
-    this.language = this.i18n.lang ();
+    this.language = this.i18n.lang();
 
     /**
      * on add function
@@ -54,10 +54,10 @@
      */
     onAdd (e) {
       // prevent default
-      e.preventDefault ();
+      e.preventDefault();
 
       // get product
-      this.cart.add (opts.product);
+      this.cart.add(opts.product);
     }
 
     /**
@@ -70,15 +70,15 @@
       e.preventDefault ();
 
       // get product
-      this.cart.remove (this.cart.line (opts.product));
+      this.cart.remove(this.cart.line(opts.product));
     }
 
     /**
      * on language update function
      */
-    this.on ('update', () => {
+    this.on('update', () => {
       // set language
-      this.language = this.i18n.lang ();
+      this.language = this.i18n.lang();
     });
 
   </script>

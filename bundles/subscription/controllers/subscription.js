@@ -88,7 +88,6 @@ class SubscriptionController extends Controller {
         }
       }
     }, async (product, line, order) => {
-      console.log(product, line, order);
       // get user
       let user = await order.get('user');
 
@@ -153,7 +152,7 @@ class SubscriptionController extends Controller {
     let prices = Array.from(product.get('pricing'));
 
     // loop prices
-    let price = prices.reduce((smallest, price) => {
+    let price = prices.filter((price) => price.price).reduce((smallest, price) => {
       // return if price smaller
       if (price.price < smallest.price) return price;
 

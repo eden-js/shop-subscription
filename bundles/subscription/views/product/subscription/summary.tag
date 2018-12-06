@@ -1,7 +1,7 @@
 <product-subscription-summary>
   <div class="row mb-2">
     <div class="col-2 pr-0">
-      <img class="img-responsive cart-image" if={ opts.line.product.images && opts.line.product.images[0] } src={ this.media.url(opts.line.product.images[0], 'sm-sq') } alt={ opts.line.product.title[this.language] }>
+      <img class="img-fluid cart-image" if={ opts.line.product.images && opts.line.product.images[0] } src={ this.media.url(opts.line.product.images[0], 'sm-sq') } alt={ opts.line.product.title[this.language] }>
     </div>
     <div class="col-7">
       <b class="d-block mb-0 text-overflow">
