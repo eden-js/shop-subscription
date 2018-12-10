@@ -56,7 +56,7 @@ class SubscriptionController extends Controller {
       return {
         'amount'    : parseFloat(price.price),
         'period'    : price.period,
-        'currency'  : 'USD',
+        'currency'  : config.get('shop.currency') || 'USD',
         'available' : true
       };
     }, async (product, line, req) => {

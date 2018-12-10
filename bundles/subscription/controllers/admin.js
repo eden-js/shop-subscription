@@ -388,7 +388,7 @@ class AdminSubscriptionController extends Controller {
 
         // return invoice total
         return col ? formatter.format(col, {
-          'code' : invoice.get('currency') || 'USD'
+          'code' : invoice.get('currency') || config.get('shop.currency') || 'USD'
         }) : '<i>N/A</i>';
       }
     }).column('state', {
