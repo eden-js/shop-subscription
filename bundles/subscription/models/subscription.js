@@ -4,7 +4,7 @@
  */
 
 // use strict
-'use strict';
+
 
 // import local dependencies
 const eden  = require('eden');
@@ -20,7 +20,7 @@ class Subscription extends Model {
    * @param attrs
    * @param options
    */
-  constructor () {
+  constructor() {
     // run super
     super(...arguments);
 
@@ -33,35 +33,35 @@ class Subscription extends Model {
    *
    * @return {Promise}
    */
-  static async initialize () {
+  static async initialize() {
     // create index
     await this.createIndex('started', {
-      'started' : -1
+      started : -1,
     });
 
     // create index
     await this.createIndex('due', {
-      'due' : -1
+      due : -1,
     });
 
     // create index
     await this.createIndex('oderID', {
-      'order.id' : 1
+      'order.id' : 1,
     });
 
     // create index
     await this.createIndex('userID', {
-      'user.id' : 1
+      'user.id' : 1,
     });
 
     // create index
     await this.createIndex('createdAt', {
-      'created_at' : -1
+      created_at : -1,
     });
 
     // create index
     await this.createIndex('updatedAt', {
-      'updated_at' : -1
+      updated_at : -1,
     });
   }
 
@@ -70,24 +70,24 @@ class Subscription extends Model {
    *
    * @return {Object}
    */
-  async sanitise () {
+  async sanitise() {
     // get helper
-    let type = this.get('type') || 'simple';
+    const type = this.get('type') || 'simple';
 
     // sanitise
-    let sanitised = {
-      'id'      : this.get('_id') ? this.get('_id').toString() : null,
-      'is'      : 'subscription',
-      'due'     : this.get('due'),
-      'state'   : this.get('state'),
-      'order'   : await this.get('order') ? await (await this.get('order')).sanitise() : null,
-      'started' : this.get('started')
+    const sanitised = {
+      id      : this.get('_id') ? this.get('_id').toString() : null,
+      is      : 'subscription',
+      due     : this.get('due'),
+      state   : this.get('state'),
+      order   : await this.get('order') ? await (await this.get('order')).sanitise() : null,
+      started : this.get('started'),
     };
 
     // return sanitised bot
     await eden.hook('subscription.sanitise', {
-      'sanitised'    : sanitised,
-      'Subscription' : this
+      sanitised,
+      Subscription : this,
     });
 
     // return sanitised

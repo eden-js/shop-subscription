@@ -12,7 +12,7 @@ class SubscriptionStore extends Events {
   /**
    * construct bootstrap class
    */
-  constructor () {
+  constructor() {
     // set observable
     super(...arguments);
 
@@ -26,20 +26,19 @@ class SubscriptionStore extends Events {
   /**
    * build cart
    */
-  build () {
-
+  build() {
     // register variable product
     ProductStore.product('subscription', {
 
     }, (product, opts) => {
       // let price
-      let price = Array.from(product.pricing);
+      const price = Array.from(product.pricing);
 
       // return price
       if (!opts.period) return product.price.amount;
 
       // get type
-      let type = price.find((p) => p.period === opts.period);
+      const type = price.find(p => p.period === opts.period);
 
       // return price
       return parseFloat(type.price);
