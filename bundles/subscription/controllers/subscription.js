@@ -18,7 +18,7 @@ class SubscriptionController extends Controller {
   /**
    * construct user SubscriptionController controller
    */
-  constructor () {
+  constructor() {
     // run super
     super();
 
@@ -32,7 +32,7 @@ class SubscriptionController extends Controller {
   /**
    * order individual item
    */
-  async build () {
+  async build() {
     // price hooks
     this.eden.pre('payment.pay', this._pay);
 
@@ -50,18 +50,18 @@ class SubscriptionController extends Controller {
 
     }, async (product, opts) => {
       // get price
-      let price = this._price(product, opts);
+      const price = this._price(product, opts);
 
       // return price
       return {
-        'amount'    : parseFloat(price.price),
-        'period'    : price.period,
-        'currency'  : config.get('shop.currency') || 'USD',
-        'available' : true
+        amount    : parseFloat(price.price),
+        period    : price.period,
+        currency  : config.get('shop.currency') || 'USD',
+        available : true,
       };
     }, async (product, line, req) => {
       // get price
-      let price = this._price(product, line.opts);
+      const price = this._price(product, line.opts);
 
       // check if only single
       if (product.get('subscription.isSingle')) {
@@ -71,14 +71,14 @@ class SubscriptionController extends Controller {
           return l.product === product.get('_id').toString();
         })) {
           // do alert
-          req.alert('error', 'You can only have one ' + product.get('title.' + req.language) + ' at once!');
+          req.alert('error', `You can only have one ${product.get(`title.${req.language}`)} at once!`);
 
           // return false
           return false;
-        } else if (await Subscription.findOne({
-          'state'      : 'active',
+        } if (await Subscription.findOne({
+          state        : 'active',
           'user.id'    : req.user.get('_id').toString(),
-          'product.id' : product.get('_id').toString()
+          'product.id' : product.get('_id').toString(),
         })) {
           // do alert
           req.alert('error', 'You already have this subscription!');
@@ -89,29 +89,29 @@ class SubscriptionController extends Controller {
       }
     }, async (product, line, order) => {
       // get user
-      let user = await order.get('user');
+      const user = await order.get('user');
 
       // get price
-      let price = this._price(product, line.opts);
+      const price = this._price(product, line.opts);
 
       // get opts
-      let subscription = await Subscription.findOne({
-        'uuid' : line.opts.uuid
+      const subscription = await Subscription.findOne({
+        uuid : line.opts.uuid,
       }) || new Subscription({
-        'line'    : line,
-        'user'    : user,
-        'price'   : price.price,
-        'order'   : order,
-        'period'  : line.opts.period || price.period,
-        'product' : product
+        line,
+        user,
+        price   : price.price,
+        order,
+        period  : line.opts.period || price.period,
+        product,
       });
 
       // set paypal
-      subscription.set('state',   'active');
+      subscription.set('state', 'active');
       subscription.set('started', new Date());
 
       // set now
-      let due = new Date();
+      const due = new Date();
 
       // check interval
       if (subscription.get('period') === 'weekly') {
@@ -147,25 +147,25 @@ class SubscriptionController extends Controller {
    *
    * @return {*}
    */
-  _price (product, opts) {
+  _price(product, opts) {
     // get prices
-    let prices = Array.from(product.get('pricing'));
+    const prices = Array.from(product.get('pricing'));
 
     // loop prices
-    let price = prices.filter((price) => price.price).reduce((smallest, price) => {
+    let price = prices.filter(price => price.price).reduce((smallest, price) => {
       // return if price smaller
       if (price.price < smallest.price) return price;
 
       // return smallest
       return smallest;
     }, {
-      'price' : Infinity
+      price : Infinity,
     });
 
     // check period in opts
     if (opts && opts.period) {
       // set price
-      price = prices.find((p) => p.period === opts.period);
+      price = prices.find(p => p.period === opts.period);
     }
 
     // return price
@@ -179,22 +179,22 @@ class SubscriptionController extends Controller {
    *
    * @return {Promise}
    */
-  async _pay (payment) {
+  async _pay(payment) {
     // check method
     if (payment.get('error')) return;
 
     // load user
-    let invoice = await payment.get('invoice');
-    let order   = await invoice.get('order');
+    const invoice = await payment.get('invoice');
+    const order   = await invoice.get('order');
 
     // get lines
-    let lines    = order.get('lines');
-    let products = await order.get('products');
+    const lines    = order.get('lines');
+    const products = await order.get('products');
 
     // check lines
-    let subscriptionLines = lines.filter((line) => {
+    const subscriptionLines = lines.filter((line) => {
       // get product
-      let product = products.find((p) => p.get('_id').toString() === line.product);
+      const product = products.find(p => p.get('_id').toString() === line.product);
 
       // check product
       return product.get('type') === 'subscription';
@@ -204,13 +204,13 @@ class SubscriptionController extends Controller {
     if (!subscriptionLines || !subscriptionLines.length) return;
 
     // create subscriptions array
-    let subscriptions = [];
+    const subscriptions = [];
 
     // setup logic
     await Promise.all(subscriptionLines.map(async (line) => {
       // get product
-      let product = products.find((p) => p.get('_id').toString() === line.product);
-      let prices  = Array.from(product.get('pricing'));
+      const product = products.find(p => p.get('_id').toString() === line.product);
+      const prices  = Array.from(product.get('pricing'));
 
       // loop prices
       let price = prices.reduce((smallest, price) => {
@@ -220,17 +220,17 @@ class SubscriptionController extends Controller {
         // return smallest
         return smallest;
       }, {
-        'price' : Infinity
+        price : Infinity,
       });
 
       // check period in opts
       if (line.opts && line.opts.period) {
         // set price
-        price = prices.find((p) => p.period === line.opts.period);
+        price = prices.find(p => p.period === line.opts.period);
       } else {
         // set period price
         line.opts = {
-          'period' : price.period
+          period : price.period,
         };
       }
 
@@ -240,26 +240,26 @@ class SubscriptionController extends Controller {
       // loop quantity
       for (let i = 0; i < parseInt(line.qty); i++) {
         // create new subscription
-        let subscription = await Subscription.findOne({
-          'lid'        : i,
-          'period'     : line.opts.period || price.period,
+        const subscription = await Subscription.findOne({
+          lid          : i,
+          period       : line.opts.period || price.period,
           'user.id'    : order.get('user.id'),
           'order.id'   : order.get('_id').toString(),
-          'product.id' : product.get('_id').toString()
+          'product.id' : product.get('_id').toString(),
         }) || new Subscription({
-          'lid'     : i,
-          'line'    : line,
-          'user'    : await order.get('user'),
-          'price'   : price.price,
-          'order'   : order,
-          'period'  : line.opts.period || price.period,
-          'product' : product,
-          'payment' : payment,
-          'invoice' : invoice
+          lid     : i,
+          line,
+          user    : await order.get('user'),
+          price   : price.price,
+          order,
+          period  : line.opts.period || price.period,
+          product,
+          payment,
+          invoice,
         });
 
         // set details
-        subscription.set('uuid',    line.opts.uuid);
+        subscription.set('uuid', line.opts.uuid);
         subscription.set('payment', payment);
         subscription.set('invoice', invoice);
 

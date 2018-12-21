@@ -30,16 +30,16 @@ class AdminSubscriptionController extends Controller {
   /**
    * construct user admin controller
    */
-  constructor () {
+  constructor() {
     // run super
     super();
 
     // bind methods
-    this.gridAction         = this.gridAction.bind(this);
-    this.indexAction        = this.indexAction.bind(this);
-    this.createAction       = this.createAction.bind(this);
-    this.updateAction       = this.updateAction.bind(this);
-    this.removeAction       = this.removeAction.bind(this);
+    this.gridAction = this.gridAction.bind(this);
+    this.indexAction = this.indexAction.bind(this);
+    this.createAction = this.createAction.bind(this);
+    this.updateAction = this.updateAction.bind(this);
+    this.removeAction = this.removeAction.bind(this);
     this.createSubmitAction = this.createSubmitAction.bind(this);
     this.updateSubmitAction = this.updateSubmitAction.bind(this);
     this.removeSubmitAction = this.removeSubmitAction.bind(this);
@@ -49,39 +49,39 @@ class AdminSubscriptionController extends Controller {
 
     // register simple block
     BlockHelper.block('dashboard.grid.subscriptions', {
-      'acl'         : ['admin.shop'],
-      'for'         : ['admin'],
-      'title'       : 'Subscriptions Grid',
-      'description' : 'Shows grid of recent subscriptions'
+      acl         : ['admin.shop'],
+      for         : ['admin'],
+      title       : 'Subscriptions Grid',
+      description : 'Shows grid of recent subscriptions',
     }, async (req, block) => {
       // get notes block from db
-      let blockModel = await Block.findOne({
-        'uuid' : block.uuid
+      const blockModel = await Block.findOne({
+        uuid : block.uuid,
       }) || new Block({
-        'uuid' : block.uuid,
-        'type' : block.type
+        uuid : block.uuid,
+        type : block.type,
       });
 
       // create new req
-      let fauxReq = {
-        'query' : blockModel.get('state') || {}
+      const fauxReq = {
+        query : blockModel.get('state') || {},
       };
 
       // return
       return {
-        'tag'   : 'grid',
-        'name'  : 'Subscriptions',
-        'grid'  : await this._grid(req).render(fauxReq),
-        'class' : blockModel.get('class') || null,
-        'title' : blockModel.get('title') || ''
+        tag   : 'grid',
+        name  : 'Subscriptions',
+        grid  : await this._grid(req).render(fauxReq),
+        class : blockModel.get('class') || null,
+        title : blockModel.get('title') || '',
       };
     }, async (req, block) => {
       // get notes block from db
-      let blockModel = await Block.findOne({
-        'uuid' : block.uuid
+      const blockModel = await Block.findOne({
+        uuid : block.uuid,
       }) || new Block({
-        'uuid' : block.uuid,
-        'type' : block.type
+        uuid : block.uuid,
+        type : block.type,
       });
 
       // set data
@@ -95,28 +95,28 @@ class AdminSubscriptionController extends Controller {
 
     // register simple block
     BlockHelper.block('dashboard.stat.subscriptions', {
-      'acl'         : ['admin.shop'],
-      'for'         : ['admin'],
-      'title'       : 'Shop Subscription Stats',
-      'description' : 'Shop Subscription stat block'
+      acl         : ['admin.shop'],
+      for         : ['admin'],
+      title       : 'Shop Subscription Stats',
+      description : 'Shop Subscription stat block',
     }, async (req, block) => {
       // get notes block from db
-      let blockModel = await Block.findOne({
-        'uuid' : block.uuid
+      const blockModel = await Block.findOne({
+        uuid : block.uuid,
       }) || new Block({
-        'uuid' : block.uuid,
-        'type' : block.type
+        uuid : block.uuid,
+        type : block.type,
       });
 
       // get data
-      let data = await this._getSubscriptionsStat(await this._getAdmins());
+      const data = await this._getSubscriptionsStat(await this._getAdmins());
 
       // set other info
-      data.tag    = 'stat';
-      data.href   = '/admin/subscription';
+      data.tag = 'stat';
+      data.href = '/admin/subscription';
       data.titles = {
-        'today' : 'Subscritions Today',
-        'total' : 'Total Subscriptions'
+        today : 'Subscritions Today',
+        total : 'Total Subscriptions',
       };
       data.color = blockModel.get('color') || 'primary';
       data.class = blockModel.get('class') || 'col';
@@ -126,11 +126,11 @@ class AdminSubscriptionController extends Controller {
       return data;
     }, async (req, block) => {
       // get notes block from db
-      let blockModel = await Block.findOne({
-        'uuid' : block.uuid
+      const blockModel = await Block.findOne({
+        uuid : block.uuid,
       }) || new Block({
-        'uuid' : block.uuid,
-        'type' : block.type
+        uuid : block.uuid,
+        type : block.type,
       });
 
       // set data
@@ -156,10 +156,10 @@ class AdminSubscriptionController extends Controller {
    * @layout  admin
    * @parent  /admin/shop
    */
-  async indexAction (req, res) {
+  async indexAction(req, res) {
     // render grid
     res.render('subscription/admin', {
-      'grid' : await this._grid(req).render(req)
+      grid : await this._grid(req).render(req),
     });
   }
 
@@ -173,7 +173,7 @@ class AdminSubscriptionController extends Controller {
    * @layout   admin
    * @priority 12
    */
-  createAction (req, res) {
+  createAction(req, res) {
     // return update action
     return this.updateAction(req, res);
   }
@@ -187,7 +187,7 @@ class AdminSubscriptionController extends Controller {
    * @route   {get} /:id/update
    * @layout  admin
    */
-  async updateAction (req, res) {
+  async updateAction(req, res) {
     // set website variable
     let create       = true;
     let subscription = new Subscription();
@@ -195,14 +195,14 @@ class AdminSubscriptionController extends Controller {
     // check for website model
     if (req.params.id) {
       // load by id
-      create       = false;
+      create = false;
       subscription = await Subscription.findById(req.params.id);
     }
 
     // render page
     res.render('subscription/admin/update', {
-      'title'        : create ? 'Create Subscription' : 'Update ' + subscription.get('_id').toString(),
-      'subscription' : await subscription.sanitise()
+      title        : create ? 'Create Subscription' : `Update ${subscription.get('_id').toString()}`,
+      subscription : await subscription.sanitise(),
     });
   }
 
@@ -215,7 +215,7 @@ class AdminSubscriptionController extends Controller {
    * @route   {post} /create
    * @layout  admin
    */
-  createSubmitAction (req, res) {
+  createSubmitAction(req, res) {
     // return update action
     return this.updateSubmitAction(req, res);
   }
@@ -229,7 +229,7 @@ class AdminSubscriptionController extends Controller {
    * @route   {post} /:id/update
    * @layout  admin
    */
-  async updateSubmitAction (req, res) {
+  async updateSubmitAction(req, res) {
     // set website variable
     let create       = true;
     let subscription = new Subscription();
@@ -237,7 +237,7 @@ class AdminSubscriptionController extends Controller {
     // check for website model
     if (req.params.id) {
       // load by id
-      create       = false;
+      create = false;
       subscription = await Subscription.findById(req.params.id);
     }
 
@@ -248,12 +248,12 @@ class AdminSubscriptionController extends Controller {
     await subscription.save();
 
     // send alert
-    req.alert('success', 'Successfully ' + (create ? 'Created' : 'Updated') + ' subscription!');
+    req.alert('success', `Successfully ${create ? 'Created' : 'Updated'} subscription!`);
 
     // render page
     res.render('subscription/admin/update', {
-      'title'        : create ? 'Create Subscription' : 'Update ' + subscription.get('_id').toString(),
-      'subscription' : await subscription.sanitise()
+      title        : create ? 'Create Subscription' : `Update ${subscription.get('_id').toString()}`,
+      subscription : await subscription.sanitise(),
     });
   }
 
@@ -266,7 +266,7 @@ class AdminSubscriptionController extends Controller {
    * @route   {get} /:id/remove
    * @layout  admin
    */
-  async removeAction (req, res) {
+  async removeAction(req, res) {
     // set website variable
     let subscription = false;
 
@@ -278,8 +278,8 @@ class AdminSubscriptionController extends Controller {
 
     // render page
     res.render('subscription/admin/remove', {
-      'title'        : 'Remove ' + subscription.get('_id').toString(),
-      'subscription' : await subscription.sanitise()
+      title        : `Remove ${subscription.get('_id').toString()}`,
+      subscription : await subscription.sanitise(),
     });
   }
 
@@ -293,7 +293,7 @@ class AdminSubscriptionController extends Controller {
    * @title   subscription Administration
    * @layout  admin
    */
-  async removeSubmitAction (req, res) {
+  async removeSubmitAction(req, res) {
     // set website variable
     let subscription = false;
 
@@ -304,7 +304,7 @@ class AdminSubscriptionController extends Controller {
     }
 
     // alert Removed
-    req.alert('success', 'Successfully removed ' + (subscription.get('_id').toString()));
+    req.alert('success', `Successfully removed ${subscription.get('_id').toString()}`);
 
     // delete website
     await subscription.remove();
@@ -321,7 +321,7 @@ class AdminSubscriptionController extends Controller {
    *
    * @route {post} /grid
    */
-  gridAction (req, res) {
+  gridAction(req, res) {
     // return post grid request
     return this._grid(req).post(req, res);
   }
@@ -331,9 +331,9 @@ class AdminSubscriptionController extends Controller {
    *
    * @return {grid}
    */
-  _grid (req) {
+  _grid(req) {
     // create new grid
-    let subscriptionGrid = new Grid();
+    const subscriptionGrid = new Grid();
 
     // set route
     subscriptionGrid.route('/admin/subscription/grid');
@@ -343,133 +343,139 @@ class AdminSubscriptionController extends Controller {
 
     // add grid columns
     subscriptionGrid.column('_id', {
-      'title'  : 'ID',
-      'format' : async (col) => {
+      title  : 'ID',
+      format : async (col) => {
         return col ? col.toString() : '<i>N/A</i>';
-      }
+      },
     }).column('user', {
-      'sort'   : true,
-      'title'  : 'User',
-      'format' : async (col, row) => {
+      sort   : true,
+      title  : 'User',
+      format : async (col, row) => {
         // get user
-        let user = await row.get('user');
+        const user = await row.get('user');
 
         // return user name
-        return user ? '<a href="/admin/user/' + user.get('_id').toString() + '">' + (user.name() || user.get('email')) + '</a>' : 'Anonymous';
-      }
+        return user ? `<a href="/admin/user/${user.get('_id').toString()}">${user.name() || user.get('email')}</a>` : 'Anonymous';
+      },
     }).column('started', {
-      'sort'   : true,
-      'title'  : 'Started',
-      'format' : async (col, row) => {
+      sort   : true,
+      title  : 'Started',
+      format : async (col, row) => {
         // return invoice total
         return col ? col.toLocaleDateString('en-GB', {
-          'day'   : 'numeric',
-          'month' : 'short',
-          'year'  : 'numeric'
+          day   : 'numeric',
+          month : 'short',
+          year  : 'numeric',
         }) : '<i>N/A</i>';
-      }
+      },
     }).column('due', {
-      'sort'   : true,
-      'title'  : 'Due',
-      'format' : async (col, row) => {
+      sort   : true,
+      title  : 'Due',
+      format : async (col, row) => {
         // return invoice total
         return col ? col.toLocaleDateString('en-GB', {
-          'day'   : 'numeric',
-          'month' : 'short',
-          'year'  : 'numeric'
+          day   : 'numeric',
+          month : 'short',
+          year  : 'numeric',
         }) : '<i>N/A</i>';
-      }
-    }).column('price', {
-      'sort'   : true,
-      'title'  : 'Price',
-      'format' : async (col, row) => {
+      },
+    })
+      .column('price', {
+        sort   : true,
+        title  : 'Price',
+        format : async (col, row) => {
         // get currency
-        const invoice = await row.get('invoice');
+          const invoice = await row.get('invoice');
 
-        // return invoice total
-        return col ? formatter.format(col, {
-          'code' : invoice.get('currency') || config.get('shop.currency') || 'USD'
-        }) : '<i>N/A</i>';
-      }
-    }).column('state', {
-      'sort'   : true,
-      'title'  : 'State',
-      'format' : async (col, row) => {
-        return !col ? 'Pending' : col;
-      }
-    }).column('paid', {
-      'sort'   : true,
-      'title'  : 'Paid',
-      'format' : async (col, row) => {
+          // return invoice total
+          return col ? formatter.format(col, {
+            code : invoice.get('currency') || config.get('shop.currency') || 'USD',
+          }) : '<i>N/A</i>';
+        },
+      })
+      .column('state', {
+        sort   : true,
+        title  : 'State',
+        format : async (col, row) => {
+          return !col ? 'Pending' : col;
+        },
+      })
+      .column('paid', {
+        sort   : true,
+        title  : 'Paid',
+        format : async (col, row) => {
         // get invoice
-        let payment = await row.get('payment');
+          const payment = await row.get('payment');
 
-        console.log(payment);
+          console.log(payment);
 
-        // get paid
-        return payment && payment.get('complete') ? '<span class="btn btn-sm btn-success">Paid</span>' : '<span class="btn btn-sm btn-danger">Unpaid</span>';
-      }
-    }).column('updated_at', {
-      'sort'   : true,
-      'title'  : 'Updated',
-      'format' : async (col) => {
-        return col.toLocaleDateString('en-GB', {
-          'day'   : 'numeric',
-          'month' : 'short',
-          'year'  : 'numeric'
-        });
-      }
-    }).column('created_at', {
-      'sort'   : true,
-      'title'  : 'Created',
-      'format' : async (col) => {
-        return col.toLocaleDateString('en-GB', {
-          'day'   : 'numeric',
-          'month' : 'short',
-          'year'  : 'numeric'
-        });
-      }
-    }).column('actions', {
-      'type'   : false,
-      'width'  : '1%',
-      'title'  : 'Actions',
-      'format' : async (col, row) => {
-        return [
-          '<div class="btn-group btn-group-sm" role="group">',
-            '<a href="/admin/subscription/' + row.get('_id').toString() + '/update" class="btn btn-primary"><i class="fa fa-pencil"></i></a>',
-            '<a href="/admin/subscription/' + row.get('_id').toString() + '/remove" class="btn btn-danger"><i class="fa fa-times"></i></a>',
-          '</div>'
-        ].join('');
-      }
-    });
+          // get paid
+          return payment && payment.get('complete') ? '<span class="btn btn-sm btn-success">Paid</span>' : '<span class="btn btn-sm btn-danger">Unpaid</span>';
+        },
+      })
+      .column('updated_at', {
+        sort   : true,
+        title  : 'Updated',
+        format : async (col) => {
+          return col.toLocaleDateString('en-GB', {
+            day   : 'numeric',
+            month : 'short',
+            year  : 'numeric',
+          });
+        },
+      })
+      .column('created_at', {
+        sort   : true,
+        title  : 'Created',
+        format : async (col) => {
+          return col.toLocaleDateString('en-GB', {
+            day   : 'numeric',
+            month : 'short',
+            year  : 'numeric',
+          });
+        },
+      })
+      .column('actions', {
+        type   : false,
+        width  : '1%',
+        title  : 'Actions',
+        format : async (col, row) => {
+          return [
+            '<div class="btn-group btn-group-sm" role="group">',
+            `<a href="/admin/subscription/${row.get('_id').toString()}/update" class="btn btn-primary"><i class="fa fa-pencil"></i></a>`,
+            `<a href="/admin/subscription/${row.get('_id').toString()}/remove" class="btn btn-danger"><i class="fa fa-times"></i></a>`,
+            '</div>',
+          ].join('');
+        },
+      });
 
     // add grid filters
     subscriptionGrid.filter('username', {
-      'title' : 'Username',
-      'type'  : 'text',
-      'query' : async (param) => {
+      title : 'Username',
+      type  : 'text',
+      query : async (param) => {
         // check param
         if (!param || !param.length) return;
 
         // get users
-        let users = await User.match('username', new RegExp(escapeRegex(param.toString().toLowerCase()), 'i')).find();
+        const users = await User.match('username', new RegExp(escapeRegex(param.toString().toLowerCase()), 'i')).find();
 
         // user id in
-        subscriptionGrid.in('user.id', users.map((user) => user.get('_id').toString()));
-      }
+        subscriptionGrid.in('user.id', users.map(user => user.get('_id').toString()));
+      },
     }).filter('email', {
-      'title' : 'Email',
-      'type'  : 'text',
-      'query' : async (param) => {
+      title : 'Email',
+      type  : 'text',
+      query : async (param) => {
         // check param
         if (!param || !param.length) return;
 
         // get users
-        let users = await User.match('email', new RegExp(escapeRegex(param.toString().toLowerCase()), 'i')).find();
+        const users = await User.match('email', new RegExp(escapeRegex(param.toString().toLowerCase()), 'i')).find();
 
         // user id in
-        subscriptionGrid.in('user.id', users.map((user) => user.get('_id').toString()));
-      }
+        subscriptionGrid.in('user.id', users.map(user => user.get('_id').toString()));
+      },
     });
 
     // set default sort subscription
@@ -486,33 +492,34 @@ class AdminSubscriptionController extends Controller {
    *
    * @return {Object}
    */
-  async _getSubscriptionsStat (admins) {
+  async _getSubscriptionsStat(admins) {
     // let date
-    let start = new Date();
-        start.setHours(24, 0, 0, 0);
-        start.setDate(start.getDate() - 14);
+    const start = new Date();
+    start.setHours(24, 0, 0, 0);
+    start.setDate(start.getDate() - 14);
 
     // set last
-    let last = new Date();
-        last.setHours(24, 0, 0, 0);
+    const last = new Date();
+    last.setHours(24, 0, 0, 0);
 
     // create Date
     let current = new Date(start);
 
     // set totals
-    let totals = [];
-    let values = [];
+    const totals = [];
+    const values = [];
 
     // loop for deposits
     while (current <= last) {
       // set next
-      let next = new Date(current);
-          next.setDate(next.getDate() + 1);
+      const next = new Date(current);
+      next.setDate(next.getDate() + 1);
 
       // return amount sum
-      let total = await Subscription.gte('created_at', current).lte('created_at', next).where({
-        'state' : 'active'
-      }).nin('user.id', admins).count();
+      const total = await Subscription.gte('created_at', current).lte('created_at', next).where({
+        state : 'active',
+      }).nin('user.id', admins)
+        .count();
 
       // add to totals
       totals.push(total);
@@ -523,26 +530,26 @@ class AdminSubscriptionController extends Controller {
     }
 
     // set midnight
-    let midnight = new Date();
-        midnight.setHours(0, 0, 0, 0);
+    const midnight = new Date();
+    midnight.setHours(0, 0, 0, 0);
 
     // return totals and values
     return {
-      'total'   : (await Subscription.where({
-        'state' : 'active'
+      total   : (await Subscription.where({
+        state : 'active',
       }).nin('user.id', admins).count()).toLocaleString(),
-      'today'   : (await Subscription.where({
-        'state' : 'active'
-      }).gte('created_at', new Date(new Date().setHours (0, 0, 0, 0))).nin('user.id', admins).count()).toLocaleString(),
-      'weekly'  : (await Subscription.where({
-        'state' : 'active'
+      today   : (await Subscription.where({
+        state : 'active',
+      }).gte('created_at', new Date(new Date().setHours(0, 0, 0, 0))).nin('user.id', admins).count()).toLocaleString(),
+      weekly  : (await Subscription.where({
+        state : 'active',
       }).gte('created_at', new Date(midnight.getTime() - (7 * 24 * 60 * 60 * 1000))).nin('user.id', admins).count()).toLocaleString(),
-      'monthly' : (await Subscription.where({
-        'state' : 'active'
+      monthly : (await Subscription.where({
+        state : 'active',
       }).gte('created_at', new Date(midnight.getTime() - (30 * 24 * 60 * 60 * 1000))).nin('user.id', admins).count()).toLocaleString(),
 
       totals,
-      values
+      values,
     };
   }
 
@@ -551,16 +558,16 @@ class AdminSubscriptionController extends Controller {
    *
    * @return {*}
    */
-  async _getAdmins () {
+  async _getAdmins() {
     // set admins
-    let adminACL = await Acl.findOne({
-      'name' : 'Admin'
+    const adminACL = await Acl.findOne({
+      name : 'Admin',
     });
 
     // get admins
-    let admins = (await User.where({
-      'acl.id' : adminACL.get('_id').toString()
-    }).find()).map((user) => user.get('_id').toString());
+    const admins = (await User.where({
+      'acl.id' : adminACL.get('_id').toString(),
+    }).find()).map(user => user.get('_id').toString());
 
     // return admins
     return admins;
