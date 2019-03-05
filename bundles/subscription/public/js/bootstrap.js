@@ -32,10 +32,12 @@ class SubscriptionStore extends Events {
 
     }, (product, opts) => {
       // let price
-      const price = Array.from(product.pricing);
+      const price = Object.values(product.pricing || {});
 
       // return price
       if (!opts.period) return product.price.amount;
+
+      console.log(opts, price);
 
       // get type
       const type = price.find(p => p.period === opts.period);
