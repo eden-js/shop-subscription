@@ -46,8 +46,9 @@ class SubscriptionController extends Controller {
     });
 
     // register product types
-    ProductHelper.product('subscription', {
-
+    ProductHelper.register('subscription', {
+      options  : ['availability'],
+      sections : ['subscription-pricing', 'display'],
     }, async (product, opts) => {
       // get price
       const price = this._price(product, opts);
