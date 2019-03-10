@@ -12,7 +12,7 @@
       </p>
     </div>
     <div class="col-3 text-right">
-      <money class="lead" amount={ (parseFloat(getOption().amount) * opts.line.qty) } /> { this.t(getOption().period) }
+      <money class="lead" amount={ (parseFloat(getOption().price) * opts.line.qty) } /> { this.t(getOption().period) }
     </div>
   </div>
 

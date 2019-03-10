@@ -101,10 +101,10 @@ class SubscriptionController extends Controller {
       }) || new Subscription({
         line,
         user,
-        price   : price.price,
         order,
-        period  : line.opts.period || price.period,
         product,
+        price  : price.price,
+        period : line.opts.period || price.period,
       });
 
       // set paypal
@@ -153,9 +153,9 @@ class SubscriptionController extends Controller {
     const prices = Array.from(product.get('pricing'));
 
     // loop prices
-    let price = prices.filter(price => price.price).reduce((smallest, price) => {
+    let price = prices.filter(p => p.price).reduce((smallest, p) => {
       // return if price smaller
-      if (price.price < smallest.price) return price;
+      if (p.price < smallest.price) return p;
 
       // return smallest
       return smallest;
@@ -214,9 +214,9 @@ class SubscriptionController extends Controller {
       const prices  = Array.from(product.get('pricing'));
 
       // loop prices
-      let price = prices.reduce((smallest, price) => {
+      let price = prices.reduce((smallest, p) => {
         // return if price smaller
-        if (price.price < smallest.price) return price;
+        if (p.price < smallest.price) return p;
 
         // return smallest
         return smallest;
@@ -239,7 +239,7 @@ class SubscriptionController extends Controller {
       line.opts.uuid = uuid();
 
       // loop quantity
-      for (let i = 0; i < parseInt(line.qty); i++) {
+      for (let i = 0; i < parseInt(line.qty, 10); i++) {
         // create new subscription
         const subscription = await Subscription.findOne({
           lid          : i,
@@ -248,12 +248,12 @@ class SubscriptionController extends Controller {
           'order.id'   : order.get('_id').toString(),
           'product.id' : product.get('_id').toString(),
         }) || new Subscription({
-          lid     : i,
+          lid    : i,
+          user   : await order.get('user'),
+          price  : price.price,
+          period : line.opts.period || price.period,
           line,
-          user    : await order.get('user'),
-          price   : price.price,
           order,
-          period  : line.opts.period || price.period,
           product,
           payment,
           invoice,
