@@ -1,7 +1,7 @@
 {
   "name": "@edenjs/shop-subscription",
   "description": "",
-  "version": "1.0.15",
+  "version": "1.1.0",
   "dependencies": {},
   "engines": {
     "node": ">= 8.0.0"
