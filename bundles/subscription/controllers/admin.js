@@ -1,8 +1,6 @@
 
 // bind dependencies
 const Grid       = require('grid');
-const alert      = require('alert');
-const crypto     = require('crypto');
 const formatter  = require('currency-formatter');
 const Controller = require('controller');
 
@@ -10,14 +8,14 @@ const Controller = require('controller');
 const Acl          = model('acl');
 const User         = model('user');
 const Block        = model('block');
-const Payment      = model('payment');
 const Subscription = model('subscription');
 
 // bind local dependencies
 const config = require('config');
 
 // require helpers
-const BlockHelper = helper('cms/block');
+const blockHelper        = helper('cms/block');
+const subscriptionHelper = helper('subscription');
 
 /**
  * build user admin controller
@@ -48,7 +46,7 @@ class AdminSubscriptionController extends Controller {
     this._grid = this._grid.bind(this);
 
     // register simple block
-    BlockHelper.block('dashboard.grid.subscriptions', {
+    blockHelper.block('dashboard.grid.subscriptions', {
       acl         : ['admin.shop'],
       for         : ['admin'],
       title       : 'Subscriptions Grid',
@@ -94,7 +92,7 @@ class AdminSubscriptionController extends Controller {
     });
 
     // register simple block
-    BlockHelper.block('dashboard.stat.subscriptions', {
+    blockHelper.block('dashboard.stat.subscriptions', {
       acl         : ['admin.shop'],
       for         : ['admin'],
       title       : 'Shop Subscription Stats',
@@ -300,7 +298,7 @@ class AdminSubscriptionController extends Controller {
     // check for website model
     if (req.params.id) {
       // load user
-      subscription = await Subscrpition.findById(req.params.id);
+      subscription = await Subscription.findById(req.params.id);
     }
 
     // alert Removed
@@ -308,6 +306,62 @@ class AdminSubscriptionController extends Controller {
 
     // delete website
     await subscription.remove();
+
+    // render index
+    return this.indexAction(req, res);
+  }
+
+  /**
+   * delete action
+   *
+   * @param req
+   * @param res
+   *
+   * @route   {get} /:id/cancel
+   * @layout  admin
+   */
+  async cancelAction(req, res) {
+    // set website variable
+    let subscription = false;
+
+    // check for website model
+    if (req.params.id) {
+      // load user
+      subscription = await Subscription.findById(req.params.id);
+    }
+
+    // render page
+    res.render('subscription/admin/cancel', {
+      title        : `Cancel ${subscription.get('_id').toString()}`,
+      subscription : await subscription.sanitise(),
+    });
+  }
+
+  /**
+   * delete action
+   *
+   * @param req
+   * @param res
+   *
+   * @route   {post} /:id/cancel
+   * @title   subscription Administration
+   * @layout  admin
+   */
+  async cancelSubmitAction(req, res) {
+    // set website variable
+    let subscription = false;
+
+    // check for website model
+    if (req.params.id) {
+      // load user
+      subscription = await Subscription.findById(req.params.id);
+    }
+
+    // delete website
+    await subscriptionHelper.cancel(subscription);
+
+    // alert Removed
+    req.alert('success', `Successfully canelled ${subscription.get('_id').toString()}`);
 
     // render index
     return this.indexAction(req, res);
@@ -397,7 +451,8 @@ class AdminSubscriptionController extends Controller {
         sort   : true,
         title  : 'State',
         format : async (col, row) => {
-          return !col ? 'Pending' : col;
+          // pending
+          return req.t(`subscription:state.${col || 'pending'}`);
         },
       })
       .column('paid', {
@@ -406,8 +461,6 @@ class AdminSubscriptionController extends Controller {
         format : async (col, row) => {
         // get invoice
           const payment = await row.get('payment');
-
-          console.log(payment);
 
           // get paid
           return payment && payment.get('complete') ? '<span class="btn btn-sm btn-success">Paid</span>' : '<span class="btn btn-sm btn-danger">Unpaid</span>';
@@ -444,6 +497,7 @@ class AdminSubscriptionController extends Controller {
             '<div class="btn-group btn-group-sm" role="group">',
             `<a href="/admin/subscription/${row.get('_id').toString()}/update" class="btn btn-primary"><i class="fa fa-pencil"></i></a>`,
             `<a href="/admin/subscription/${row.get('_id').toString()}/remove" class="btn btn-danger"><i class="fa fa-times"></i></a>`,
+            `<a href="/admin/subscription/${row.get('_id').toString()}/cancel" class="btn btn-danger"><i class="fa fa-ban"></i></a>`,
             '</div>',
           ].join('');
         },
