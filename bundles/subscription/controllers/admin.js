@@ -360,8 +360,14 @@ class AdminSubscriptionController extends Controller {
     // delete website
     await subscriptionHelper.cancel(subscription);
 
-    // alert Removed
-    req.alert('success', `Successfully canelled ${subscription.get('_id').toString()}`);
+    // check state
+    if (subscription.get('state') !== 'active') {
+      // emit cancelled
+      this.eden.emit('subscription.cancelled', subscription.get('_id').toString());
+
+      // alert Removed
+      req.alert('success', `Successfully canelled ${subscription.get('_id').toString()}`);
+    }
 
     // render index
     return this.indexAction(req, res);
