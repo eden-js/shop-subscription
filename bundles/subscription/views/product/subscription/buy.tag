@@ -112,7 +112,7 @@
       let currency = require('currency-formatter');
 
       // get value
-      let value = opts.convert !== false ? (parseFloat(amount) * this.eden.get('rates')[opts.currency || this.settings.currency || 'USD']) : amount;
+      let value = opts.convert !== false ? (parseFloat(amount) * this.eden.get('shop.rates')[opts.currency || this.settings.currency || this.eden.get('shop.currency') || 'USD']) : amount;
 
       // check value
       if (this.settings.currency === 'JPY') {
@@ -124,7 +124,7 @@
 
       // return formatted currency
       return this.eden.frontend ? currency.format(value, {
-        'code' : opts.currency || this.settings.currency || 'USD'
+        'code' : opts.currency || this.settings.currency || this.eden.get('shop.currency') || 'USD'
       }) : value.toLocaleString();
     }
   </script>

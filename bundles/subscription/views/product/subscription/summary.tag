@@ -12,7 +12,7 @@
       </p>
     </div>
     <div class="col-3 text-right">
-      <money class="lead" amount={ (parseFloat(getOption().price) * opts.line.qty) } /> { this.t(getOption().period) }
+      <money class="lead" amount={ (this.product.price(opts.line.product, opts.line.opts) * opts.line.qty) } /> { this.t(getOption().period) }
     </div>
   </div>
 
@@ -20,6 +20,7 @@
     // do media
     this.mixin('i18n');
     this.mixin('media');
+    this.mixin('product');
 
     // set language
     this.language = this.i18n.lang();

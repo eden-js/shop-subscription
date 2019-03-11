@@ -150,7 +150,7 @@ class SubscriptionController extends Controller {
    */
   _price(product, opts) {
     // get prices
-    const prices = Array.from(product.get('pricing'));
+    const prices = Array.from(product.get('pricing') || []);
 
     // loop prices
     let price = prices.filter(p => p.price).reduce((smallest, p) => {
@@ -239,7 +239,7 @@ class SubscriptionController extends Controller {
       line.opts.uuid = uuid();
 
       // loop quantity
-      for (let i = 0; i < parseInt(line.qty, 10); i++) {
+      for (let i = 0; i < parseInt(line.qty, 10); i += 1) {
         // create new subscription
         const subscription = await Subscription.findOne({
           lid          : i,

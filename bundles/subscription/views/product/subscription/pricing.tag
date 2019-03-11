@@ -4,8 +4,6 @@
       Subscription Pricing
     </div>
 
-    <div data-is={ 'product-' + this.payment + '-update' } />
-
     <div each={ option, i in this.options }>
       <div class={ 'card-body' : true, 'pt-0' : i > 0 }>
         <div class="row">
