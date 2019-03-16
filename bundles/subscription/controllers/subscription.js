@@ -5,7 +5,6 @@ const config     = require('config');
 const Controller = require('controller');
 
 // require models
-const Product      = model('product');
 const Subscription = model('subscription');
 
 // get helpers
@@ -186,11 +185,11 @@ class SubscriptionController extends Controller {
 
     // load user
     const invoice = await payment.get('invoice');
-    const order   = await invoice.get('order');
+    const orders  = await invoice.get('orders');
 
     // get lines
-    const lines    = order.get('lines');
-    const products = await order.get('products');
+    const lines    = invoice.get('lines');
+    const products = [].concat(...(await Promise.all(orders.map(order => order.get('products')))));
 
     // check lines
     const subscriptionLines = lines.filter((line) => {
@@ -240,6 +239,9 @@ class SubscriptionController extends Controller {
 
       // loop quantity
       for (let i = 0; i < parseInt(line.qty, 10); i += 1) {
+        // get order
+        const order = orders.find(o => o.get('_id').toString() === line.order);
+
         // create new subscription
         const subscription = await Subscription.findOne({
           lid          : i,
@@ -267,16 +269,22 @@ class SubscriptionController extends Controller {
         // save subscription
         await subscription.save();
 
+        // set order subscriptions
+        if (!subscriptions[line.order]) subscriptions[line.order] = [];
+
         // add to subscriptions
-        subscriptions.push(subscription);
+        subscriptions[line.order].push(subscription);
       }
     }));
 
     // save subscriptions to order
-    order.set('subscriptions', subscriptions);
+    await Promise.all(orders.map(async (order) => {
+      // set subscriptions
+      order.set('subscriptions', subscriptions[order.get('_id').toString()]);
 
-    // save order
-    await order.save();
+      // save order
+      await order.save();
+    }));
   }
 }
 

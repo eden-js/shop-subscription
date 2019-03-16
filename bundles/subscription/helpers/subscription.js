@@ -27,6 +27,9 @@ class SubscriptionHelper extends Helper {
     // get payment
     const payment = await subscription.get('payment');
 
+    // no payment
+    if (!payment) return;
+
     // await endpoint
     return await this.eden.call(`subscription.${payment.get('method.type')}.cancel`, subscription, payment);
   }
@@ -41,6 +44,9 @@ class SubscriptionHelper extends Helper {
   async update(subscription) {
     // get payment
     const payment = await subscription.get('payment');
+
+    // no payment
+    if (!payment) return;
 
     // await endpoint
     return await this.eden.call(`subscription.${payment.get('method.type')}.update`, subscription, payment);

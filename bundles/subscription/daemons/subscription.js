@@ -75,6 +75,9 @@ class SubscriptionDaemon extends Daemon {
     // get payment
     const payment = await subscription.get('payment');
 
+    // check payment
+    if (!payment) return;
+
     // await check
     await this.eden.call(`subscription.${payment.get('method.type')}.update`, subscription, payment);
 

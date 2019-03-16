@@ -1,5 +1,5 @@
 <product-subscription-cart>
-  <div class="row mx-0">
+  <div class="row mx-0" if={ opts.product && opts.product.title }>
     <div class="col-3 px-0" if={ opts.product.images && opts.product.images.length }>
       <img class="img-fluid cart-image" src={ this.media.url(opts.product.images[0], 'sm-sq') } alt={ opts.product.title[this.language] }>
     </div>
@@ -11,7 +11,7 @@
     </div>
     <div class="col-2 px-0">
       <a href="#!" onclick={ opts.remove } class="btn btn-sm btn-danger float-right">
-        <fa i="times" />
+        <i class="fa fa-times" />
       </a>
     </div>
   </div>

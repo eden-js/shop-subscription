@@ -37,8 +37,6 @@ class SubscriptionStore extends Events {
       // return price
       if (!opts.period) return product.price.amount;
 
-      console.log(opts, price);
-
       // get type
       const type = price.find(p => p.period === opts.period);
 
