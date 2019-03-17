@@ -145,8 +145,8 @@ class AdminSubscriptionController extends Controller {
   /**
    * index action
    *
-   * @param req
-   * @param res
+   * @param  {Request}  req
+   * @param  {Response} res
    *
    * @icon    fa fa-box-usd
    * @menu    {ADMIN} Subscriptions
@@ -165,8 +165,8 @@ class AdminSubscriptionController extends Controller {
   /**
    * add/edit action
    *
-   * @param req
-   * @param res
+   * @param  {Request}  req
+   * @param  {Response} res
    *
    * @route    {get} /create
    * @layout   admin
@@ -180,8 +180,8 @@ class AdminSubscriptionController extends Controller {
   /**
    * update action
    *
-   * @param req
-   * @param res
+   * @param  {Request}  req
+   * @param  {Response} res
    *
    * @route   {get} /:id/update
    * @layout  admin
@@ -208,8 +208,8 @@ class AdminSubscriptionController extends Controller {
   /**
    * create submit action
    *
-   * @param req
-   * @param res
+   * @param  {Request}  req
+   * @param  {Response} res
    *
    * @route   {post} /create
    * @layout  admin
@@ -222,8 +222,8 @@ class AdminSubscriptionController extends Controller {
   /**
    * add/edit action
    *
-   * @param req
-   * @param res
+   * @param  {Request}  req
+   * @param  {Response} res
    *
    * @route   {post} /:id/update
    * @layout  admin
@@ -259,8 +259,8 @@ class AdminSubscriptionController extends Controller {
   /**
    * delete action
    *
-   * @param req
-   * @param res
+   * @param  {Request}  req
+   * @param  {Response} res
    *
    * @route   {get} /:id/remove
    * @layout  admin
@@ -285,8 +285,8 @@ class AdminSubscriptionController extends Controller {
   /**
    * delete action
    *
-   * @param req
-   * @param res
+   * @param  {Request}  req
+   * @param  {Response} res
    *
    * @route   {post} /:id/remove
    * @title   subscription Administration
@@ -315,8 +315,8 @@ class AdminSubscriptionController extends Controller {
   /**
    * delete action
    *
-   * @param req
-   * @param res
+   * @param  {Request}  req
+   * @param  {Response} res
    *
    * @route   {get} /:id/cancel
    * @layout  admin
@@ -341,8 +341,8 @@ class AdminSubscriptionController extends Controller {
   /**
    * delete action
    *
-   * @param req
-   * @param res
+   * @param  {Request}  req
+   * @param  {Response} res
    *
    * @route   {post} /:id/cancel
    * @title   subscription Administration
@@ -377,8 +377,8 @@ class AdminSubscriptionController extends Controller {
   /**
    * user grid action
    *
-   * @param req
-   * @param res
+   * @param  {Request}  req
+   * @param  {Response} res
    *
    * @route {post} /grid
    */
@@ -491,7 +491,7 @@ class AdminSubscriptionController extends Controller {
         title  : 'State',
         format : async (col, row) => {
           // pending
-          return `<span class="btn btn-sm btn-${col === 'cancelled' ? 'danger' : 'success'}">${req.t(`subscription:state.${col || 'pending'}`)}</span>`;
+          return `<span class="btn btn-sm btn-${col === 'cancelled' ? 'danger' : (col === 'requested' ? 'warning' : 'success')}">${req.t(`subscription:state.${col || 'pending'}`)}</span>`;
         },
       })
       .column('actions', {

@@ -179,14 +179,80 @@ class SubscriptionController extends Controller {
   /**
    * user grid action
    *
-   * @param req
-   * @param res
+   * @param  {Request}  req
+   * @param  {Response} res
    *
    * @route {post} /grid
    */
   gridAction(req, res) {
     // return post grid request
     return this._grid(req).post(req, res);
+  }
+
+  /**
+   * delete action
+   *
+   * @param  {Request}  req
+   * @param  {Response} res
+   * @param  {Function} next
+   *
+   * @route {get} /:id/remove
+   */
+  async removeAction(req, res, next) {
+    // set website variable
+    let subscription = false;
+
+    // check for website model
+    if (req.params.id) {
+      // load user
+      subscription = await Subscription.findById(req.params.id);
+    }
+
+    // return next
+    if (subscription.get('user.id') !== req.user.get('_id').toString()) return next();
+
+    // render page
+    res.render('subscription/remove', {
+      title        : `Remove ${subscription.get('_id').toString()}`,
+      subscription : await subscription.sanitise(),
+    });
+  }
+
+  /**
+   * delete action
+   *
+   * @param  {Request}  req
+   * @param  {Response} res
+   * @param  {Function} next
+   *
+   * @route   {post} /:id/remove
+   * @title   subscription Administration
+   * @layout  admin
+   */
+  async removeSubmitAction(req, res, next) {
+    // set website variable
+    let subscription = false;
+
+    // check for website model
+    if (req.params.id) {
+      // load user
+      subscription = await Subscription.findById(req.params.id);
+    }
+
+    // return next
+    if (subscription.get('user.id') !== req.user.get('_id').toString()) return next();
+
+    // delete website
+    subscription.set('state', 'requested');
+
+    // save
+    await subscription.save();
+
+    // alert Removed
+    req.alert('success', `Successfully removed ${subscription.get('_id').toString()}`);
+
+    // render index
+    return this.indexAction(req, res);
   }
 
 
@@ -427,7 +493,7 @@ class SubscriptionController extends Controller {
         title  : 'State',
         format : async (col, row) => {
           // pending
-          return `<span class="btn btn-sm btn-${col === 'cancelled' ? 'danger' : 'success'}">${req.t(`subscription:state.${col || 'pending'}`)}</span>`;
+          return `<span class="btn btn-sm btn-${col === 'cancelled' ? 'danger' : (col === 'requested' ? 'warning' : 'success')}">${req.t(`subscription:state.${col || 'pending'}`)}</span>`;
         },
       })
       .column('actions', {

@@ -70,7 +70,7 @@ class Subscription extends Model {
    *
    * @return {Object}
    */
-  async sanitise() {
+  async sanitise(sensitive) {
     // get helper
     const type = this.get('type') || 'simple';
 
@@ -80,7 +80,8 @@ class Subscription extends Model {
       is      : 'subscription',
       due     : this.get('due'),
       state   : this.get('state'),
-      order   : await this.get('order') ? await (await this.get('order')).sanitise() : null,
+      order   : sensitive && await this.get('order') ? await (await this.get('order')).sanitise() : null,
+      product : await this.get('product') ? await (await this.get('product')).sanitise() : null,
       started : this.get('started'),
     };
 

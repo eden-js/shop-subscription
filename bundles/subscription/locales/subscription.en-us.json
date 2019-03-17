@@ -1,6 +1,7 @@
 {
   "state" : {
     "active"    : "Active",
+    "requested" : "Cancel Requested",
     "cancelled" : "Cancelled"
   }
 }
