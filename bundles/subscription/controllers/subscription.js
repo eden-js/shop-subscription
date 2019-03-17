@@ -1,17 +1,21 @@
 
 // bind dependencies
 const uuid       = require('uuid');
+const Grid       = require('grid');
 const config     = require('config');
+const formatter  = require('currency-formatter');
 const Controller = require('controller');
 
 // require models
 const Subscription = model('subscription');
 
 // get helpers
-const ProductHelper = helper('product');
+const productHelper = helper('product');
 
 /**
  * build product controller
+ *
+ * @mount /subscription
  */
 class SubscriptionController extends Controller {
   /**
@@ -25,8 +29,15 @@ class SubscriptionController extends Controller {
     this.build = this.build.bind(this);
 
     // build product helper
-    this.build();
+    this.building = this.build();
   }
+
+
+  // ////////////////////////////////////////////////////////////////////////////
+  //
+  // BUILD METHODS
+  //
+  // ////////////////////////////////////////////////////////////////////////////
 
   /**
    * order individual item
@@ -45,7 +56,7 @@ class SubscriptionController extends Controller {
     });
 
     // register product types
-    ProductHelper.register('subscription', {
+    productHelper.register('subscription', {
       options  : ['availability'],
       sections : ['subscription-pricing', 'display'],
     }, async (product, opts) => {
@@ -138,6 +149,52 @@ class SubscriptionController extends Controller {
       await subscription.save();
     });
   }
+
+
+  // ////////////////////////////////////////////////////////////////////////////
+  //
+  // NORMAL METHODS
+  //
+  // ////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * index action
+   *
+   * @param  {Request}  req
+   * @param  {Response} res
+   *
+   * @acl   true
+   * @fail  next
+   * @route {GET} /
+   *
+   * @return {*}
+   */
+  async indexAction(req, res) {
+    // render subscription page
+    res.render('subscription', {
+      grid : await (await this._grid(req)).render(req),
+    });
+  }
+
+  /**
+   * user grid action
+   *
+   * @param req
+   * @param res
+   *
+   * @route {post} /grid
+   */
+  gridAction(req, res) {
+    // return post grid request
+    return this._grid(req).post(req, res);
+  }
+
+
+  // ////////////////////////////////////////////////////////////////////////////
+  //
+  // PRIVATE METHODS
+  //
+  // ////////////////////////////////////////////////////////////////////////////
 
   /**
    * gets product price
@@ -285,6 +342,117 @@ class SubscriptionController extends Controller {
       // save order
       await order.save();
     }));
+  }
+
+  /**
+   * renders grid
+   *
+   * @return {grid}
+   */
+  _grid(req) {
+    // create new grid
+    const subscriptionGrid = new Grid();
+
+    // set route
+    subscriptionGrid.route('/subscription/grid');
+
+    // set grid model
+    subscriptionGrid.model(Subscription);
+
+    // add grid columns
+    subscriptionGrid.column('_id', {
+      title  : 'ID',
+      format : async (col) => {
+        return col ? col.toString() : '<i>N/A</i>';
+      },
+    })
+      .column('product', {
+        sort   : true,
+        title  : 'Product',
+        format : async (col, row) => {
+          // return product
+          return col ? `<a href="/product/${col.get('slug')}">${col.get(`title.${req.language}`)}</a>` : '<i>N/A</i>';
+        },
+      })
+      .column('price', {
+        sort   : true,
+        title  : 'Price',
+        format : async (col, row) => {
+        // get currency
+          const invoice = await row.get('invoice');
+
+          // return invoice total
+          return col ? formatter.format(col, {
+            code : invoice.get('currency') || config.get('shop.currency') || 'USD',
+          }) : '<i>N/A</i>';
+        },
+      })
+      .column('created_at', {
+        sort   : true,
+        title  : 'Created',
+        format : async (col) => {
+          return col.toLocaleDateString('en-GB', {
+            day   : 'numeric',
+            month : 'short',
+            year  : 'numeric',
+          });
+        },
+      })
+      .column('started', {
+        sort   : true,
+        title  : 'Started',
+        format : async (col, row) => {
+          // return invoice total
+          return col ? col.toLocaleDateString('en-GB', {
+            day   : 'numeric',
+            month : 'short',
+            year  : 'numeric',
+          }) : '<i>N/A</i>';
+        },
+      })
+      .column('due', {
+        sort   : true,
+        title  : 'Due',
+        format : async (col, row) => {
+          // return invoice total
+          return col ? col.toLocaleDateString('en-GB', {
+            day   : 'numeric',
+            month : 'short',
+            year  : 'numeric',
+          }) : '<i>N/A</i>';
+        },
+      })
+      .column('state', {
+        sort   : true,
+        title  : 'State',
+        format : async (col, row) => {
+          // pending
+          return `<span class="btn btn-sm btn-${col === 'cancelled' ? 'danger' : 'success'}">${req.t(`subscription:state.${col || 'pending'}`)}</span>`;
+        },
+      })
+      .column('actions', {
+        type   : false,
+        width  : '1%',
+        title  : 'Actions',
+        format : async (col, row) => {
+          return row.get('state') === 'active' ? [
+            '<div class="btn-group btn-group-sm" role="group">',
+            `<a href="/subscription/${row.get('_id').toString()}/remove" class="btn btn-danger">Remove</a>`,
+            '</div>',
+          ].join('') : '';
+        },
+      });
+
+    // by user
+    subscriptionGrid.where({
+      'user.id' : req.user.get('_id').toString(),
+    });
+
+    // set default sort subscription
+    subscriptionGrid.sort('created_at', -1);
+
+    // return grid
+    return subscriptionGrid;
   }
 }
 

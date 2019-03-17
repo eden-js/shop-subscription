@@ -1,8 +1,9 @@
 
 // bind dependencies
-const Grid       = require('grid');
-const formatter  = require('currency-formatter');
-const Controller = require('controller');
+const Grid        = require('grid');
+const formatter   = require('currency-formatter');
+const Controller  = require('controller');
+const escapeRegex = require('escape-string-regexp');
 
 // require models
 const Acl          = model('acl');
@@ -22,7 +23,7 @@ const subscriptionHelper = helper('subscription');
  *
  * @acl   admin.subscription.view
  * @fail  /
- * @mount /admin/subscription
+ * @mount /admin/shop/subscription
  */
 class AdminSubscriptionController extends Controller {
   /**
@@ -417,29 +418,15 @@ class AdminSubscriptionController extends Controller {
         // return user name
         return user ? `<a href="/admin/user/${user.get('_id').toString()}">${user.name() || user.get('email')}</a>` : 'Anonymous';
       },
-    }).column('started', {
-      sort   : true,
-      title  : 'Started',
-      format : async (col, row) => {
-        // return invoice total
-        return col ? col.toLocaleDateString('en-GB', {
-          day   : 'numeric',
-          month : 'short',
-          year  : 'numeric',
-        }) : '<i>N/A</i>';
-      },
-    }).column('due', {
-      sort   : true,
-      title  : 'Due',
-      format : async (col, row) => {
-        // return invoice total
-        return col ? col.toLocaleDateString('en-GB', {
-          day   : 'numeric',
-          month : 'short',
-          year  : 'numeric',
-        }) : '<i>N/A</i>';
-      },
     })
+      .column('product', {
+        sort   : true,
+        title  : 'Product',
+        format : async (col, row) => {
+          // return product
+          return col ? `<a href="/product/${col.get('slug')}">${col.get(`title.${req.language}`)}</a>` : '<i>N/A</i>';
+        },
+      })
       .column('price', {
         sort   : true,
         title  : 'Price',
@@ -453,14 +440,6 @@ class AdminSubscriptionController extends Controller {
           }) : '<i>N/A</i>';
         },
       })
-      .column('state', {
-        sort   : true,
-        title  : 'State',
-        format : async (col, row) => {
-          // pending
-          return req.t(`subscription:state.${col || 'pending'}`);
-        },
-      })
       .column('paid', {
         sort   : true,
         title  : 'Paid',
@@ -472,17 +451,6 @@ class AdminSubscriptionController extends Controller {
           return payment && payment.get('complete') ? '<span class="btn btn-sm btn-success">Paid</span>' : '<span class="btn btn-sm btn-danger">Unpaid</span>';
         },
       })
-      .column('updated_at', {
-        sort   : true,
-        title  : 'Updated',
-        format : async (col) => {
-          return col.toLocaleDateString('en-GB', {
-            day   : 'numeric',
-            month : 'short',
-            year  : 'numeric',
-          });
-        },
-      })
       .column('created_at', {
         sort   : true,
         title  : 'Created',
@@ -492,6 +460,38 @@ class AdminSubscriptionController extends Controller {
             month : 'short',
             year  : 'numeric',
           });
+        },
+      })
+      .column('started', {
+        sort   : true,
+        title  : 'Started',
+        format : async (col, row) => {
+          // return invoice total
+          return col ? col.toLocaleDateString('en-GB', {
+            day   : 'numeric',
+            month : 'short',
+            year  : 'numeric',
+          }) : '<i>N/A</i>';
+        },
+      })
+      .column('due', {
+        sort   : true,
+        title  : 'Due',
+        format : async (col, row) => {
+          // return invoice total
+          return col ? col.toLocaleDateString('en-GB', {
+            day   : 'numeric',
+            month : 'short',
+            year  : 'numeric',
+          }) : '<i>N/A</i>';
+        },
+      })
+      .column('state', {
+        sort   : true,
+        title  : 'State',
+        format : async (col, row) => {
+          // pending
+          return `<span class="btn btn-sm btn-${col === 'cancelled' ? 'danger' : 'success'}">${req.t(`subscription:state.${col || 'pending'}`)}</span>`;
         },
       })
       .column('actions', {
@@ -539,7 +539,7 @@ class AdminSubscriptionController extends Controller {
     });
 
     // set default sort subscription
-    subscriptionGrid.sort('created_at', 1);
+    subscriptionGrid.sort('created_at', -1);
 
     // return grid
     return subscriptionGrid;
