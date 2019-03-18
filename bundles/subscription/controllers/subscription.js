@@ -196,6 +196,7 @@ class SubscriptionController extends Controller {
    * @param  {Response} res
    * @param  {Function} next
    *
+   * @title Cancel Subscription
    * @route {get} /:id/remove
    */
   async removeAction(req, res, next) {
@@ -225,9 +226,8 @@ class SubscriptionController extends Controller {
    * @param  {Response} res
    * @param  {Function} next
    *
-   * @route   {post} /:id/remove
-   * @title   subscription Administration
-   * @layout  admin
+   * @route  {post} /:id/remove
+   * @title  Cancel Subscription
    */
   async removeSubmitAction(req, res, next) {
     // set website variable
@@ -252,7 +252,7 @@ class SubscriptionController extends Controller {
     req.alert('success', `Successfully removed ${subscription.get('_id').toString()}`);
 
     // render index
-    return this.indexAction(req, res);
+    res.redirect('/subscription');
   }
 
 
