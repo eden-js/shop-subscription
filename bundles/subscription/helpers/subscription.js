@@ -31,7 +31,16 @@ class SubscriptionHelper extends Helper {
     if (!payment) return;
 
     // await endpoint
-    return await this.eden.call(`subscription.${payment.get('method.type')}.cancel`, subscription, payment);
+    const rtn = await this.eden.call(`subscription.${payment.get('method.type')}.cancel`, subscription, payment);
+
+    // emit cancelled
+    if (subscription.get('state') === 'cancelled') {
+      // emit
+      this.eden.emit('subscription.cancelled', subscription);
+    }
+
+    // return
+    return rtn;
   }
 
   /**
@@ -49,7 +58,16 @@ class SubscriptionHelper extends Helper {
     if (!payment) return;
 
     // await endpoint
-    return await this.eden.call(`subscription.${payment.get('method.type')}.update`, subscription, payment);
+    const rtn = await this.eden.call(`subscription.${payment.get('method.type')}.update`, subscription, payment);
+
+    // emit cancelled
+    if (subscription.get('state') === 'cancelled') {
+      // emit
+      this.eden.emit('subscription.cancelled', subscription);
+    }
+
+    // return
+    return rtn;
   }
 }
 

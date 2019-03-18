@@ -6,6 +6,9 @@ const Daemon = require('daemon');
 // require models
 const Subscription = model('subscription');
 
+// require helper
+const subscriptionHelper = helper('subscription');
+
 /**
  * Stripe Daemon
  *
@@ -72,20 +75,8 @@ class SubscriptionDaemon extends Daemon {
    * @return {Promise}
    */
   async checkSubscription(subscription) {
-    // get payment
-    const payment = await subscription.get('payment');
-
-    // check payment
-    if (!payment) return;
-
     // await check
-    await this.eden.call(`subscription.${payment.get('method.type')}.update`, subscription, payment);
-
-    // check active
-    if (subscription.get('state') !== 'active') {
-      // emit
-      this.eden.emit('subscription.cancelled', subscription.get('_id').toString());
-    }
+    await subscriptionHelper.update(subscription);
   }
 }
 
