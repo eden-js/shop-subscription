@@ -3,14 +3,14 @@
 
     <admin-header title="{ opts.subscription.id ? 'Update' : 'Create' } Order">
       <yield to="right">
-        <a href="/admin/subscription" class="btn btn-lg btn-primary">
+        <a href="/admin/shop/subscription" class="btn btn-lg btn-primary">
           Back
         </a>
       </yield>
     </admin-header>
     
     <div class="container-fluid">
-      <form method="post" action="/admin/subscription/{ opts.subscription.id ? opts.subscription.id + '/update' : 'create' }">
+      <form method="post" action="/admin/shop/subscription/{ opts.subscription.id ? opts.subscription.id + '/update' : 'create' }">
         <div class="row">
           <div class="col-md-7">
             <div class="card card-subscription mb-3">

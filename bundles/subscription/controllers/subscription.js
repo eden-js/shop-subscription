@@ -244,6 +244,7 @@ class SubscriptionController extends Controller {
 
     // delete website
     subscription.set('state', 'requested');
+    subscription.set('request_at', new Date());
 
     // save
     await subscription.save();
