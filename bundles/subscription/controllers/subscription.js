@@ -106,9 +106,13 @@ class SubscriptionController extends Controller {
 
       // get opts
       const subscription = await Subscription.findOne({
-        uuid : line.opts.uuid,
+        uuid       : line.uuid,
+        'order.id' : order.get('_id').toString(),
+      }) || await Subscription.findOne({
+        'order.id'  : order.get('_id').toString(),
+        'line.uuid' : line.uuid,
       }) || new Subscription({
-        uuid : line.opts.uuid,
+        uuid : line.uuid,
         line,
         user,
         order,
@@ -116,6 +120,7 @@ class SubscriptionController extends Controller {
       });
 
       // set paypal
+      subscription.set('uuid', line.uuid);
       subscription.set('state', 'active');
       subscription.set('started_at', new Date());
 
