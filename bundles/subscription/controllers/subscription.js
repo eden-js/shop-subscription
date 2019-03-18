@@ -147,6 +147,9 @@ class SubscriptionController extends Controller {
 
       // save subscription
       await subscription.save();
+
+      // do emittion
+      this.eden.emit('subscription.started', subscription);
     });
   }
 
@@ -248,6 +251,9 @@ class SubscriptionController extends Controller {
 
     // save
     await subscription.save();
+
+    // emit cancel requested
+    this.eden.emit('subscription.requested', subscription);
 
     // alert Removed
     req.alert('success', `Successfully removed ${subscription.get('_id').toString()}`);
