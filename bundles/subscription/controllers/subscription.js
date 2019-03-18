@@ -7,6 +7,7 @@ const formatter  = require('currency-formatter');
 const Controller = require('controller');
 
 // require models
+const Payment      = model('payment');
 const Subscription = model('subscription');
 
 // get helpers
@@ -100,26 +101,32 @@ class SubscriptionController extends Controller {
       }
     }, async (product, line, order) => {
       // get user
-      const user = await order.get('user');
-
-      // get price
-      const price = this._price(product, line.opts);
+      const user    = await order.get('user');
+      const invoice = await order.get('invoice');
 
       // get opts
       const subscription = await Subscription.findOne({
         uuid : line.opts.uuid,
       }) || new Subscription({
+        uuid : line.opts.uuid,
         line,
         user,
         order,
         product,
-        price  : price.price,
-        period : line.opts.period || price.period,
       });
 
       // set paypal
       subscription.set('state', 'active');
-      subscription.set('started', new Date());
+      subscription.set('started_at', new Date());
+
+      // set price
+      subscription.set('price', parseFloat(line.price));
+      subscription.set('period', line.opts.period);
+      subscription.set('invoice', invoice);
+      subscription.set('payment', await Payment.findOne({
+        complete     : true,
+        'invoice.id' : invoice.get('_id').toString(),
+      }));
 
       // set now
       const due = new Date();
@@ -451,13 +458,14 @@ class SubscriptionController extends Controller {
         sort   : true,
         title  : 'Price',
         format : async (col, row) => {
-        // get currency
-          const invoice = await row.get('invoice');
+          // get currency
+          const order   = await row.get('order');
+          const invoice = await order.get('invoice');
 
           // return invoice total
-          return col ? formatter.format(col, {
+          return col && invoice ? `${formatter.format(col, {
             code : invoice.get('currency') || config.get('shop.currency') || 'USD',
-          }) : '<i>N/A</i>';
+          })} ${order.get('currency') || config.get('shop.currency') || 'USD'}` : '<i>N/A</i>';
         },
       })
       .column('created_at', {
@@ -471,7 +479,7 @@ class SubscriptionController extends Controller {
           });
         },
       })
-      .column('started', {
+      .column('started_at', {
         sort   : true,
         title  : 'Started',
         format : async (col, row) => {
@@ -520,6 +528,7 @@ class SubscriptionController extends Controller {
     subscriptionGrid.where({
       'user.id' : req.user.get('_id').toString(),
     });
+    subscriptionGrid.nin('state', [null, 'pending']);
 
     // set default sort subscription
     subscriptionGrid.sort('created_at', -1);

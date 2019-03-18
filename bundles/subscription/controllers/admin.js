@@ -431,13 +431,14 @@ class AdminSubscriptionController extends Controller {
         sort   : true,
         title  : 'Price',
         format : async (col, row) => {
-        // get currency
-          const invoice = await row.get('invoice');
+          // get currency
+          const order   = await row.get('order');
+          const invoice = await order.get('invoice');
 
           // return invoice total
-          return col ? formatter.format(col, {
+          return col && invoice ? `${formatter.format(col, {
             code : invoice.get('currency') || config.get('shop.currency') || 'USD',
-          }) : '<i>N/A</i>';
+          })} ${order.get('currency') || config.get('shop.currency') || 'USD'}` : '<i>N/A</i>';
         },
       })
       .column('paid', {
@@ -462,7 +463,7 @@ class AdminSubscriptionController extends Controller {
           });
         },
       })
-      .column('started', {
+      .column('started_at', {
         sort   : true,
         title  : 'Started',
         format : async (col, row) => {
@@ -503,7 +504,7 @@ class AdminSubscriptionController extends Controller {
             '<div class="btn-group btn-group-sm" role="group">',
             `<a href="/admin/shop/subscription/${row.get('_id').toString()}/update" class="btn btn-primary"><i class="fa fa-pencil"></i></a>`,
             `<a href="/admin/shop/subscription/${row.get('_id').toString()}/remove" class="btn btn-danger"><i class="fa fa-times"></i></a>`,
-            `<a href="/admin/shop/subscription/${row.get('_id').toString()}/cancel" class="btn btn-danger"><i class="fa fa-ban"></i></a>`,
+            row.get('state') !== 'cancelled' ? `<a href="/admin/shop/subscription/${row.get('_id').toString()}/cancel" class="btn btn-danger"><i class="fa fa-ban"></i></a>` : '',
             '</div>',
           ].join('');
         },
@@ -540,6 +541,7 @@ class AdminSubscriptionController extends Controller {
 
     // set default sort subscription
     subscriptionGrid.sort('created_at', -1);
+    subscriptionGrid.nin('state', [null, 'pending']);
 
     // return grid
     return subscriptionGrid;
