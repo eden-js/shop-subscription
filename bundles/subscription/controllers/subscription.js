@@ -256,7 +256,7 @@ class SubscriptionController extends Controller {
     this.eden.emit('subscription.requested', subscription);
 
     // alert Removed
-    req.alert('success', `Successfully removed ${subscription.get('_id').toString()}`);
+    req.alert('success', `Successfully Requested Cancellation of ${subscription.get('_id').toString()}`);
 
     // render index
     res.redirect('/subscription');
