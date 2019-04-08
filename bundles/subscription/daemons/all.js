@@ -39,26 +39,35 @@ class SubscriptionAllDaemon extends Daemon {
       // check user
       if (!user) return;
 
-      // get subs
-      const subs = await subscriptionHelper.active(user);
+      // lock user
+      await user.lock();
 
-      // get actives
-      const actives = (await Promise.all(subs.map(async (active) => {
-        // get product
-        const product = await active.get('product');
+      // try catch
+      try {
+        // get subs
+        const subs = await subscriptionHelper.active(user);
 
-        // check product
-        if (product) return product.get('sku');
-      }))).filter(sku => sku);
+        // get actives
+        const actives = (await Promise.all(subs.map(async (active) => {
+          // get product
+          const product = await active.get('product');
 
-      // set subscriptions
-      user.set('subscription', {
-        subs          : actives,
-        subscriptions : subs,
-      });
+          // check product
+          if (product) return product.get('sku');
+        }))).filter(sku => sku);
 
-      // save user
-      await user.save(user);
+        // set subscriptions
+        user.set('subscription', {
+          subs : actives,
+        });
+        user.set('subscription.subscriptions', subs);
+
+        // save user
+        await user.save();
+      } catch (e) {}
+
+      // unlock
+      user.unlock();
     };
 
     // build sale daemon
