@@ -11,7 +11,8 @@ const Payment      = model('payment');
 const Subscription = model('subscription');
 
 // get helpers
-const productHelper = helper('product');
+const productHelper      = helper('product');
+const subscriptionHelper = helper('subscription');
 
 /**
  * build product controller
@@ -125,6 +126,7 @@ class SubscriptionController extends Controller {
       subscription.set('started_at', new Date());
 
       // set price
+      subscription.set('user', await subscription.get('user') || user);
       subscription.set('price', parseFloat(line.price));
       subscription.set('period', line.opts.period);
       subscription.set('invoice', invoice);
@@ -159,6 +161,30 @@ class SubscriptionController extends Controller {
 
       // save subscription
       await subscription.save();
+
+      // check user
+      if (user) {
+        // get subs
+        const subs = await subscriptionHelper.active(user);
+
+        // get actives
+        const actives = (await Promise.all(subs.map(async (active) => {
+          // get product
+          const p = await active.get('product');
+
+          // check product
+          if (product) return p.get('sku');
+        }))).filter(sku => sku);
+
+        // set subscriptions
+        user.set('subscription', {
+          subs          : actives,
+          subscriptions : subs,
+        });
+
+        // save user
+        await user.save(user);
+      }
 
       // do emittion
       this.eden.emit('subscription.started', subscription);

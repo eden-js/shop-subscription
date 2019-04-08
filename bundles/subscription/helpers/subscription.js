@@ -2,6 +2,9 @@
 // require dependencies
 const Helper = require('helper');
 
+// require models
+const Subscription = model('subscription');
+
 /**
  * create subscription helper
  *
@@ -14,6 +17,21 @@ class SubscriptionHelper extends Helper {
   constructor() {
     // run super
     super(...arguments);
+  }
+
+  /**
+   * cancels subscription
+   *
+   * @param  {User} user
+   *
+   * @return {*}
+   */
+  async active(user) {
+    // get payment
+    return await Subscription.where({
+      state     : 'active',
+      'user.id' : user.get('_id').toString(),
+    }).find();
   }
 
   /**
