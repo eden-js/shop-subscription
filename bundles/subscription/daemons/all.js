@@ -5,6 +5,9 @@ const Daemon = require('daemon');
 // require models
 const Subscription = model('subscription');
 
+// require helpers
+const subscriptionHelper = helper('subscription');
+
 /**
  * build example dameon class
  */
@@ -28,8 +31,42 @@ class SubscriptionAllDaemon extends Daemon {
    * builds rentlar slack daemon
    */
   async build() {
+    // updated subscription
+    const updatedSubscription = async (subscription) => {
+      // get user
+      const user = await subscription.get('user');
+
+      // check user
+      if (!user) return;
+
+      // get subs
+      const subs = await subscriptionHelper.active(user);
+
+      // get actives
+      const actives = (await Promise.all(subs.map(async (active) => {
+        // get product
+        const product = await active.get('product');
+
+        // check product
+        if (product) return product.get('sku');
+      }))).filter(sku => sku);
+
+      // set subscriptions
+      user.set('subscription', {
+        subs          : actives,
+        subscriptions : subs,
+      });
+
+      // save user
+      await user.save(user);
+    };
+
     // build sale daemon
     this.eden.pre('shop.stats.send', this.sendSubscriptions);
+
+    // post updated
+    this.eden.post('subscription.create', updatedSubscription);
+    this.eden.post('subscription.update', updatedSubscription);
   }
 
   /**

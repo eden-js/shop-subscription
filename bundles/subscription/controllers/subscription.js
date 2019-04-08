@@ -162,30 +162,6 @@ class SubscriptionController extends Controller {
       // save subscription
       await subscription.save();
 
-      // check user
-      if (user) {
-        // get subs
-        const subs = await subscriptionHelper.active(user);
-
-        // get actives
-        const actives = (await Promise.all(subs.map(async (active) => {
-          // get product
-          const p = await active.get('product');
-
-          // check product
-          if (product) return p.get('sku');
-        }))).filter(sku => sku);
-
-        // set subscriptions
-        user.set('subscription', {
-          subs          : actives,
-          subscriptions : subs,
-        });
-
-        // save user
-        await user.save(user);
-      }
-
       // do emittion
       this.eden.emit('subscription.started', subscription);
     });
