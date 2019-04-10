@@ -108,7 +108,7 @@ class AdminSubscriptionController extends Controller {
       });
 
       // get data
-      const data = await this._getSubscriptionsStat(await this._getAdmins());
+      const data = await this._getSubscriptionsStat();
 
       // set other info
       data.tag = 'stat';
@@ -554,7 +554,7 @@ class AdminSubscriptionController extends Controller {
    *
    * @return {Object}
    */
-  async _getSubscriptionsStat(admins) {
+  async _getSubscriptionsStat() {
     // let date
     const start = new Date();
     start.setHours(24, 0, 0, 0);
@@ -580,7 +580,7 @@ class AdminSubscriptionController extends Controller {
       // return amount sum
       const total = await Subscription.gte('created_at', current).lte('created_at', next).where({
         state : 'active',
-      }).nin('user.id', admins)
+      })
         .count();
 
       // add to totals
@@ -599,40 +599,20 @@ class AdminSubscriptionController extends Controller {
     return {
       total   : (await Subscription.where({
         state : 'active',
-      }).nin('user.id', admins).count()).toLocaleString(),
+      }).count()).toLocaleString(),
       today   : (await Subscription.where({
         state : 'active',
-      }).gte('created_at', new Date(new Date().setHours(0, 0, 0, 0))).nin('user.id', admins).count()).toLocaleString(),
+      }).gte('created_at', new Date(new Date().setHours(0, 0, 0, 0))).count()).toLocaleString(),
       weekly  : (await Subscription.where({
         state : 'active',
-      }).gte('created_at', new Date(midnight.getTime() - (7 * 24 * 60 * 60 * 1000))).nin('user.id', admins).count()).toLocaleString(),
+      }).gte('created_at', new Date(midnight.getTime() - (7 * 24 * 60 * 60 * 1000))).count()).toLocaleString(),
       monthly : (await Subscription.where({
         state : 'active',
-      }).gte('created_at', new Date(midnight.getTime() - (30 * 24 * 60 * 60 * 1000))).nin('user.id', admins).count()).toLocaleString(),
+      }).gte('created_at', new Date(midnight.getTime() - (30 * 24 * 60 * 60 * 1000))).count()).toLocaleString(),
 
       totals,
       values,
     };
-  }
-
-  /**
-   * gets admins
-   *
-   * @return {*}
-   */
-  async _getAdmins() {
-    // set admins
-    const adminACL = await Acl.findOne({
-      name : 'Admin',
-    });
-
-    // get admins
-    const admins = (await User.where({
-      'acl.id' : adminACL.get('_id').toString(),
-    }).find()).map(user => user.get('_id').toString());
-
-    // return admins
-    return admins;
   }
 }
 
