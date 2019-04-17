@@ -34,7 +34,7 @@
      *
      * @return {Float}
      */
-    getOption () {
+    getOption() {
       // check frontend
       if (!this.eden.frontend || !opts.line.opts.period) return opts.line.product.price;
 

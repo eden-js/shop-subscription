@@ -8,6 +8,7 @@ const Controller = require('controller');
 
 // require models
 const Payment      = model('payment');
+const Invoice      = model('invoice');
 const Subscription = model('subscription');
 
 // get helpers
@@ -328,11 +329,11 @@ class SubscriptionController extends Controller {
     if (payment.get('error')) return;
 
     // load user
-    const invoice = await payment.get('invoice');
-    const orders  = await invoice.get('orders');
+    const invoice = await payment.get('invoice') || new Invoice();
+    const orders  = await invoice.get('orders') || [];
 
     // get lines
-    const lines    = invoice.get('lines');
+    const lines    = invoice.get('lines') || [];
     const products = [].concat(...(await Promise.all(orders.map(order => order.get('products')))));
 
     // check lines
