@@ -106,65 +106,71 @@ class SubscriptionController extends Controller {
       const user    = await order.get('user');
       const invoice = await order.get('invoice');
 
-      // get opts
-      const subscription = await Subscription.findOne({
-        uuid       : line.uuid,
-        'order.id' : order.get('_id').toString(),
-      }) || await Subscription.findOne({
-        'order.id'  : order.get('_id').toString(),
-        'line.uuid' : line.uuid,
-      }) || new Subscription({
-        uuid : line.uuid,
-        line,
-        user,
-        order,
-        product,
-      });
+      // loop quantity
+      for (let i = 0; i < parseInt(line.qty, 10); i += 1) {
+        // get opts
+        const subscription = await Subscription.findOne({
+          lid        : i,
+          uuid       : line.uuid,
+          'order.id' : order.get('_id').toString(),
+        }) || await Subscription.findOne({
+          lid         : i,
+          'order.id'  : order.get('_id').toString(),
+          'line.uuid' : line.uuid,
+        }) || new Subscription({
+          lid  : i,
+          uuid : line.uuid,
+          line,
+          user,
+          order,
+          product,
+        });
 
-      // set paypal
-      subscription.set('uuid', line.uuid);
-      subscription.set('state', 'active');
-      subscription.set('started_at', new Date());
+        // set paypal
+        subscription.set('uuid', line.uuid);
+        subscription.set('state', 'active');
+        subscription.set('started_at', new Date());
 
-      // set price
-      subscription.set('user', await subscription.get('user') || user);
-      subscription.set('price', parseFloat(line.price));
-      subscription.set('period', line.opts.period);
-      subscription.set('invoice', invoice);
-      subscription.set('payment', await Payment.findOne({
-        complete     : true,
-        'invoice.id' : invoice.get('_id').toString(),
-      }));
+        // set price
+        subscription.set('user', await subscription.get('user') || user);
+        subscription.set('price', parseFloat(line.price));
+        subscription.set('period', line.opts.period);
+        subscription.set('invoice', invoice);
+        subscription.set('payment', await Payment.findOne({
+          complete     : true,
+          'invoice.id' : invoice.get('_id').toString(),
+        }));
 
-      // set now
-      const due = new Date();
-
-      // check interval
-      if (subscription.get('period') === 'weekly') {
         // set now
-        due.setTime((new Date()).getTime() + (7 * 24 * 60 * 60 * 1000));
-      } else if (subscription.get('period') === 'monthly') {
-        // set due to one week ahead
-        due.setMonth(due.getMonth() + 1);
-      } else if (subscription.get('period') === 'quarterly') {
-        // set due to one week ahead
-        due.setMonth(due.getMonth() + 3);
-      } else if (subscription.get('period') === 'biannually') {
-        // set due to one week ahead
-        due.setMonth(due.getMonth() + 6);
-      } else if (subscription.get('period') === 'annually') {
-        // set due to one week ahead
-        due.setMonth(due.getMonth() + 12);
+        const due = new Date();
+
+        // check interval
+        if (subscription.get('period') === 'weekly') {
+          // set now
+          due.setTime((new Date()).getTime() + (7 * 24 * 60 * 60 * 1000));
+        } else if (subscription.get('period') === 'monthly') {
+          // set due to one week ahead
+          due.setMonth(due.getMonth() + 1);
+        } else if (subscription.get('period') === 'quarterly') {
+          // set due to one week ahead
+          due.setMonth(due.getMonth() + 3);
+        } else if (subscription.get('period') === 'biannually') {
+          // set due to one week ahead
+          due.setMonth(due.getMonth() + 6);
+        } else if (subscription.get('period') === 'annually') {
+          // set due to one week ahead
+          due.setMonth(due.getMonth() + 12);
+        }
+
+        // set due
+        subscription.set('due', due);
+
+        // save subscription
+        await subscription.save();
+
+        // do emittion
+        this.eden.emit('subscription.started', subscription);
       }
-
-      // set due
-      subscription.set('due', due);
-
-      // save subscription
-      await subscription.save();
-
-      // do emittion
-      this.eden.emit('subscription.started', subscription);
     });
   }
 
