@@ -3,6 +3,7 @@
 const Helper = require('helper');
 
 // require models
+const Payment      = model('payment');
 const Subscription = model('subscription');
 
 /**
@@ -43,7 +44,9 @@ class SubscriptionHelper extends Helper {
    */
   async cancel(subscription) {
     // get payment
-    const payment = await subscription.get('payment');
+    const payment = await subscription.get('payment') || await Payment.where({
+      'invoice.id' : subscription.get('invoice.id'),
+    }).ne('complete', null).findOne();
 
     // no payment
     if (!payment) return;

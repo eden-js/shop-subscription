@@ -136,10 +136,9 @@ class SubscriptionController extends Controller {
         subscription.set('price', parseFloat(line.price));
         subscription.set('period', line.opts.period);
         subscription.set('invoice', invoice);
-        subscription.set('payment', await Payment.findOne({
-          complete     : true,
+        subscription.set('payment', await Payment.where({
           'invoice.id' : invoice.get('_id').toString(),
-        }));
+        }).nin('complete', [null, false]).findOne());
 
         // set now
         const due = new Date();
@@ -237,7 +236,7 @@ class SubscriptionController extends Controller {
     if (subscription.get('user.id') !== req.user.get('_id').toString()) return next();
 
     // render page
-    res.render('subscription/remove', {
+    return res.render('subscription/remove', {
       title        : `Remove ${subscription.get('_id').toString()}`,
       subscription : await subscription.sanitise(),
     });
@@ -280,7 +279,7 @@ class SubscriptionController extends Controller {
     req.alert('success', `Successfully Requested Cancellation of ${subscription.get('_id').toString()}`);
 
     // render index
-    res.redirect('/subscription');
+    return res.redirect('/subscription');
   }
 
 

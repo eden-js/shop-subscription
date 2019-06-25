@@ -71,9 +71,6 @@ class Subscription extends Model {
    * @return {Object}
    */
   async sanitise(sensitive) {
-    // get helper
-    const type = this.get('type') || 'simple';
-
     // sanitise
     const sanitised = {
       id      : this.get('_id') ? this.get('_id').toString() : null,

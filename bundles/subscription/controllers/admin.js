@@ -446,10 +446,10 @@ class AdminSubscriptionController extends Controller {
         title  : 'Paid',
         format : async (col, row) => {
         // get invoice
-          const payment = await row.get('payment');
+          const order = await row.get('order');
 
           // get paid
-          return payment && payment.get('complete') ? '<span class="btn btn-sm btn-success">Paid</span>' : '<span class="btn btn-sm btn-danger">Unpaid</span>';
+          return order && order.get('complete') ? '<span class="btn btn-sm btn-success">Paid</span>' : '<span class="btn btn-sm btn-danger">Unpaid</span>';
         },
       })
       .column('created_at', {

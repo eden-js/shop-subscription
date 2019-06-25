@@ -3,7 +3,7 @@
 const Events = require('events');
 
 // require local stores
-const ProductStore = require('product/public/js/product');
+const productStore = require('product/public/js/product');
 
 /**
  * build bootstrap class
@@ -28,7 +28,7 @@ class SubscriptionStore extends Events {
    */
   build() {
     // register variable product
-    ProductStore.product('subscription', {
+    productStore.product('subscription', {
 
     }, (product, opts) => {
       // let price
