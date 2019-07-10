@@ -1,3 +1,4 @@
+/* eslint-disable no-empty */
 
 // require dependencies
 const Daemon = require('daemon');
@@ -20,62 +21,57 @@ class SubscriptionAllDaemon extends Daemon {
     super();
 
     // bind methods
-    this.build = this.build.bind(this);
-    this.sendSubscriptions = this.sendSubscriptions.bind(this);
-
-    // run build method
-    this.building = this.build();
+    this.statSendHook = this.statSendHook.bind(this);
+    this.subscriptionUpdateHook = this.subscriptionUpdateHook.bind(this);
   }
 
   /**
-   * builds rentlar slack daemon
+   * Subscription updated
+   *
+   * @param {Subscription} subscription
+   *
+   * @post subscription.create
+   * @post subscription.update
    */
-  async build() {
-    // updated subscription
-    const updatedSubscription = async (subscription) => {
-      // get user
-      const user = await subscription.get('user');
+  async subscriptionUpdateHook(subscription) {
+    // get user
+    const user = await subscription.get('user');
 
-      // check user
-      if (!user) return;
+    // check user
+    if (!user) return;
 
-      // lock user
-      await user.lock();
+    // lock user
+    await user.lock();
 
-      // try catch
-      try {
-        // get subs
-        const subs = await subscriptionHelper.active(user);
+    // try catch
+    try {
+      // get subs
+      const subs = await subscriptionHelper.active(user);
 
-        // get actives
-        const actives = (await Promise.all(subs.map(async (active) => {
-          // get product
-          const product = await active.get('product');
+      // get actives
+      const actives = (await Promise.all(subs.map(async (active) => {
+        // get product
+        const product = await active.get('product');
 
-          // check product
-          if (product) return product.get('sku');
-        }))).filter(sku => sku);
+        // check product
+        if (product) return product.get('sku');
 
-        // set subscriptions
-        user.set('subscription', {
-          subs : actives,
-        });
-        user.set('subscription.subscriptions', subs);
+        // return default
+        return null;
+      }))).filter(sku => sku);
 
-        // save user
-        await user.save();
-      } catch (e) {}
+      // set subscriptions
+      user.set('subscription', {
+        subs : actives,
+      });
+      user.set('subscription.subscriptions', subs);
 
-      // unlock
-      user.unlock();
-    };
+      // save user
+      await user.save();
+    } catch (e) {}
 
-    // build sale daemon
-    this.eden.pre('shop.stats.send', this.sendSubscriptions);
-
-    // post updated
-    this.eden.post('subscription.create', updatedSubscription);
-    this.eden.post('subscription.update', updatedSubscription);
+    // unlock
+    user.unlock();
   }
 
   /**
@@ -83,9 +79,10 @@ class SubscriptionAllDaemon extends Daemon {
    *
    * @param  {Object} stats
    *
+   * @pre    shop.stats.send
    * @return {*}
    */
-  async sendSubscriptions(stats) {
+  async statSendHook(stats) {
     // set today
     const week  = new Date((new Date()).getTime() - (7 * 24 * 60 * 60 * 1000));
     const today = new Date((new Date()).getTime() - (24 * 60 * 60 * 1000));

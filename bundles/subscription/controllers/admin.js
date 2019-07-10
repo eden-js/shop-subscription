@@ -6,7 +6,6 @@ const Controller  = require('controller');
 const escapeRegex = require('escape-string-regexp');
 
 // require models
-const Acl          = model('acl');
 const User         = model('user');
 const Block        = model('block');
 const Subscription = model('subscription');
@@ -422,7 +421,7 @@ class AdminSubscriptionController extends Controller {
       .column('product', {
         sort   : true,
         title  : 'Product',
-        format : async (col, row) => {
+        format : async (col) => {
           // return product
           return col ? `<a href="/product/${col.get('slug')}">${col.get(`title.${req.language}`)}</a>` : '<i>N/A</i>';
         },
@@ -466,7 +465,7 @@ class AdminSubscriptionController extends Controller {
       .column('started_at', {
         sort   : true,
         title  : 'Started',
-        format : async (col, row) => {
+        format : async (col) => {
           // return invoice total
           return col ? col.toLocaleDateString('en-GB', {
             day   : 'numeric',
@@ -478,7 +477,7 @@ class AdminSubscriptionController extends Controller {
       .column('due', {
         sort   : true,
         title  : 'Due',
-        format : async (col, row) => {
+        format : async (col) => {
           // return invoice total
           return col ? col.toLocaleDateString('en-GB', {
             day   : 'numeric',
@@ -490,8 +489,9 @@ class AdminSubscriptionController extends Controller {
       .column('state', {
         sort   : true,
         title  : 'State',
-        format : async (col, row) => {
+        format : async (col) => {
           // pending
+          // eslint-disable-next-line no-nested-ternary
           return `<span class="btn btn-sm btn-${col === 'cancelled' ? 'danger' : (col === 'requested' ? 'warning' : 'success')}">${req.t(`subscription:state.${col || 'pending'}`)}</span>`;
         },
       })
@@ -621,4 +621,4 @@ class AdminSubscriptionController extends Controller {
  *
  * @type {admin}
  */
-exports = module.exports = AdminSubscriptionController;
+module.exports = AdminSubscriptionController;

@@ -13,14 +13,6 @@ const Subscription = model('subscription');
  */
 class SubscriptionHelper extends Helper {
   /**
-   * run subscription helper
-   */
-  constructor() {
-    // run super
-    super(...arguments);
-  }
-
-  /**
    * cancels subscription
    *
    * @param  {User} user
@@ -49,7 +41,7 @@ class SubscriptionHelper extends Helper {
     }).ne('complete', null).findOne();
 
     // no payment
-    if (!payment) return;
+    if (!payment) return null;
 
     // await endpoint
     const rtn = await this.eden.call(`subscription.${payment.get('method.type')}.cancel`, subscription, payment);
@@ -76,7 +68,7 @@ class SubscriptionHelper extends Helper {
     const payment = await subscription.get('payment');
 
     // no payment
-    if (!payment) return;
+    if (!payment) return null;
 
     // await endpoint
     const rtn = await this.eden.call(`subscription.${payment.get('method.type')}.update`, subscription, payment);
@@ -97,4 +89,4 @@ class SubscriptionHelper extends Helper {
  *
  * @type {SubscriptionHelper}
  */
-exports = module.exports = new SubscriptionHelper();
+module.exports = new SubscriptionHelper();

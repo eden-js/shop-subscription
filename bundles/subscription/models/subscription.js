@@ -20,9 +20,9 @@ class Subscription extends Model {
    * @param attrs
    * @param options
    */
-  constructor() {
+  constructor(...args) {
     // run super
-    super(...arguments);
+    super(...args);
 
     // bind methods
     this.sanitise = this.sanitise.bind(this);
@@ -98,4 +98,4 @@ class Subscription extends Model {
  *
  * @type {Subscription}
  */
-exports = module.exports = Subscription;
+module.exports = Subscription;

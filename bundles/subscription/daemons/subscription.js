@@ -1,6 +1,5 @@
 
 // require daemon
-const config = require('config');
 const Daemon = require('daemon');
 
 // require models
@@ -21,9 +20,9 @@ class SubscriptionDaemon extends Daemon {
   /**
    * construct stripe daemon
    */
-  constructor() {
+  constructor(...args) {
     // run super
-    super(...arguments);
+    super(...args);
 
     // bind build method
     this.build = this.build.bind(this);
@@ -85,4 +84,4 @@ class SubscriptionDaemon extends Daemon {
  *
  * @type {*}
  */
-exports = module.exports = SubscriptionDaemon;
+module.exports = SubscriptionDaemon;

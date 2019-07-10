@@ -12,8 +12,7 @@ const Invoice      = model('invoice');
 const Subscription = model('subscription');
 
 // get helpers
-const productHelper      = helper('product');
-const subscriptionHelper = helper('subscription');
+const productHelper = helper('product');
 
 /**
  * build product controller
@@ -74,9 +73,6 @@ class SubscriptionController extends Controller {
         available : true,
       };
     }, async (product, line, req) => {
-      // get price
-      const price = this._price(product, line.opts);
-
       // check if only single
       if (product.get('subscription.isSingle')) {
         // check if user has subscription
@@ -101,6 +97,9 @@ class SubscriptionController extends Controller {
           return false;
         }
       }
+
+      // return true
+      return true;
     }, async (product, line, order) => {
       // get user
       const user    = await order.get('user');
@@ -462,7 +461,7 @@ class SubscriptionController extends Controller {
       .column('product', {
         sort   : true,
         title  : 'Product',
-        format : async (col, row) => {
+        format : async (col) => {
           // return product
           return col ? `<a href="/product/${col.get('slug')}">${col.get(`title.${req.language}`)}</a>` : '<i>N/A</i>';
         },
@@ -495,7 +494,7 @@ class SubscriptionController extends Controller {
       .column('started_at', {
         sort   : true,
         title  : 'Started',
-        format : async (col, row) => {
+        format : async (col) => {
           // return invoice total
           return col ? col.toLocaleDateString('en-GB', {
             day   : 'numeric',
@@ -507,7 +506,7 @@ class SubscriptionController extends Controller {
       .column('due', {
         sort   : true,
         title  : 'Due',
-        format : async (col, row) => {
+        format : async (col) => {
           // return invoice total
           return col ? col.toLocaleDateString('en-GB', {
             day   : 'numeric',
@@ -519,8 +518,9 @@ class SubscriptionController extends Controller {
       .column('state', {
         sort   : true,
         title  : 'State',
-        format : async (col, row) => {
+        format : async (col) => {
           // pending
+          // eslint-disable-next-line no-nested-ternary
           return `<span class="btn btn-sm btn-${col === 'cancelled' ? 'danger' : (col === 'requested' ? 'warning' : 'success')}">${req.t(`subscription:state.${col || 'pending'}`)}</span>`;
         },
       })
@@ -556,4 +556,4 @@ class SubscriptionController extends Controller {
  *
  * @type {SubscriptionController}
  */
-exports = module.exports = SubscriptionController;
+module.exports = SubscriptionController;

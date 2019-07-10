@@ -12,9 +12,9 @@ class SubscriptionStore extends Events {
   /**
    * construct bootstrap class
    */
-  constructor() {
+  constructor(...args) {
     // set observable
-    super(...arguments);
+    super(...args);
 
     // build
     this.build = this.build.bind(this);
@@ -42,7 +42,7 @@ class SubscriptionStore extends Events {
 
       // return price
       return parseFloat(type.price);
-    }, (product, opts) => {
+    }, () => {
 
     });
   }
@@ -53,4 +53,4 @@ class SubscriptionStore extends Events {
  *
  * @return {price}
  */
-exports = module.exports = new SubscriptionStore();
+module.exports = new SubscriptionStore();
