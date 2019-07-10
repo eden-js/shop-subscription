@@ -1,0 +1,21 @@
+language: node_js
+node_js:
+- '10'
+sudo: false
+install:
+- npm install --only=dev
+- npm ci
+before_script:
+- node node_modules/eslint/bin/eslint.js .
+script:
+- node ./edenconfig.js
+after_script:
+- npm test
+deploy:
+  provider: npm
+  email: alex@edenup.com
+  api_key:
+    secure: JDlIAWyFivd9jQS6FtCyVc+AM2dQtNy3keQ25mmOTk0qEiFoHcCs1q2DlY56Yx7DtrIeVbpO92l+2RioF6HvqfbLwQxkk3Yb72+sNYWjrRHBwNy2ENdWCCi+vAt92QLXf/UE/awrNcsIiSD0EnNDrJXT6T22vz4A0wtvfqPJ482zwY1U0BYujW5PutcAtmrUoUNPnR6I8kTmWrTfjcHGq+lvZR8cmV/ARY05Z/M/0SPQ4EIBJvn7Rj4rKxQ2MqKTO3ApDBgqLytn5fwMYlv/Nq98y7Hly0HLJD8/62zf3SDeuVb/ltU+AX47kvEcK5njZq6IQc8YcDy29RgT25CyRXSxMZyYhrjaismw1gApzYGHSZXinUoT51G0tDpJCOWPXwSBhGaJuOc8tAvAWuiUk2/LkZEeYsBDFW34g5ra3bJV0qQa2iVFmvcI5MlwUjauB/lry2RFKfORKZBRDk/RgHNRy0vssxzRuYKPyXHIIV+7UImk8EkDiq8Hr4ztWX1wsadByxb1G9vuZRECD3UgjbdKxn82PylnCQ6MLg6gNNTR8l+boerZ0TA+yYeqeY9l6ghGauW7ReyZrke8BFaHElF1nZ/hWesQhX58rWbAEZaakaxh+mmqg6wrOlxHbIBXbjOE+vwLYbvKmB57/4hlP9761B2iA325qzgPHbCtmLU=
+  on:
+    tags: true
+    repo: eden-js/shop-subscription
