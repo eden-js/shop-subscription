@@ -502,7 +502,7 @@ class AdminSubscriptionController extends Controller {
         format : async (col, row) => {
           return [
             '<div class="btn-group btn-group-sm" role="group">',
-            `<a href="/admin/shop/subscription/${row.get('_id').toString()}/update" class="btn btn-primary"><i class="fa fa-pencil"></i></a>`,
+            `<a href="/admin/shop/subscription/${row.get('_id').toString()}/update" class="btn btn-primary"><i class="fa fa-pencil-alt"></i></a>`,
             `<a href="/admin/shop/subscription/${row.get('_id').toString()}/remove" class="btn btn-danger"><i class="fa fa-times"></i></a>`,
             row.get('state') !== 'cancelled' ? `<a href="/admin/shop/subscription/${row.get('_id').toString()}/cancel" class="btn btn-danger"><i class="fa fa-ban"></i></a>` : '',
             '</div>',
